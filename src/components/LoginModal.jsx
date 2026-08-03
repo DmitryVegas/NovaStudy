@@ -77,6 +77,7 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
     <AnimatePresence>
       {/* Backdrop DOES NOT close on click */}
       <div
+        className="login-modal-overlay"
         style={{
           position: 'fixed',
           inset: 0,
@@ -93,6 +94,7 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          className="login-modal-container"
           style={{
             maxWidth: '440px',
             width: isMobile ? '94vw' : '100%',

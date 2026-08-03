@@ -311,6 +311,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
     <AnimatePresence>
       {/* Backdrop DOES NOT close on click */}
       <div
+        className="cabinet-modal-overlay"
         style={{
           position: 'fixed',
           inset: 0,
@@ -327,6 +328,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          className="cabinet-modal-container"
           style={{
             maxWidth: '1050px',
             width: isMobile ? '98vw' : '100%',
@@ -371,6 +373,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
 
           {/* Sidebar Navigation */}
           <div
+            className="cabinet-sidebar"
             style={{
               width: isMobile ? '100%' : '260px',
               background: isLight ? '#f8fafc' : '#090d16',
@@ -385,18 +388,21 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
           >
             <div>
               {/* User Bio Badge + Logout on Mobile Top Row */}
-              <div style={{
-                padding: isMobile ? '10px 12px' : '14px',
-                background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.04)',
-                borderRadius: '14px',
-                marginBottom: isMobile ? '10px' : '20px',
-                border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
-                boxShadow: isLight ? '0 4px 12px rgba(0, 0, 0, 0.03)' : 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingRight: isMobile ? '46px' : '14px' // padding for top close button
-              }}>
+              <div
+                className="cabinet-user-badge"
+                style={{
+                  padding: isMobile ? '10px 12px' : '14px',
+                  background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.04)',
+                  borderRadius: '14px',
+                  marginBottom: isMobile ? '10px' : '20px',
+                  border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
+                  boxShadow: isLight ? '0 4px 12px rgba(0, 0, 0, 0.03)' : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingRight: isMobile ? '46px' : '14px' // padding for top close button
+                }}
+              >
                 <div>
                   <div style={{ fontSize: isMobile ? '14px' : '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff' }}>
                     {currentUser.name || currentUser.username}
@@ -442,14 +448,17 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
               </div>
 
               {/* Tabs Container - Scrollable horizontal row on Mobile */}
-              <div style={{
-                display: 'flex',
-                flexDirection: isMobile ? 'row' : 'column',
-                overflowX: isMobile ? 'auto' : 'visible',
-                gap: isMobile ? '6px' : '8px',
-                WebkitOverflowScrolling: 'touch',
-                paddingBottom: isMobile ? '4px' : '0'
-              }}>
+              <div
+                className="cabinet-tabs-list"
+                style={{
+                  display: 'flex',
+                  flexDirection: isMobile ? 'row' : 'column',
+                  overflowX: isMobile ? 'auto' : 'visible',
+                  gap: isMobile ? '6px' : '8px',
+                  WebkitOverflowScrolling: 'touch',
+                  paddingBottom: isMobile ? '4px' : '0'
+                }}
+              >
                 {currentUser.role === 'student' && (
                   <>
                     <button
@@ -604,12 +613,15 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
           </div>
 
           {/* Main Content Area - Strictly OverflowX Hidden to block horizontal scrollbar */}
-          <div style={{
-            flex: 1,
-            padding: isMobile ? '16px 14px' : '32px',
-            overflowY: 'auto',
-            overflowX: 'hidden'
-          }}>
+          <div
+            className="cabinet-main-content"
+            style={{
+              flex: 1,
+              padding: isMobile ? '16px 14px' : '32px',
+              overflowY: 'auto',
+              overflowX: 'hidden'
+            }}
+          >
             {/* Student Status View */}
             {currentUser.role === 'student' && activeTab === 'status' && (
               <div>

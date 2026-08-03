@@ -107,7 +107,7 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="glass-panel"
+          className="glass-panel consultation-modal-container"
           style={{
             maxWidth: '560px',
             width: isMobile ? '94vw' : '100%',
