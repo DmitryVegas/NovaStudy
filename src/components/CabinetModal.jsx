@@ -317,9 +317,10 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
           inset: 0,
           zIndex: 3100,
           display: 'flex',
-          alignItems: 'center',
+          alignItems: isMobile ? 'flex-start' : 'center',
           justifyContent: 'center',
-          padding: isMobile ? '8px' : '20px',
+          padding: isMobile ? '4px' : '20px',
+          paddingTop: isMobile ? '6px' : '20px',
           background: isLight ? 'rgba(15, 23, 42, 0.65)' : 'rgba(7, 10, 18, 0.92)',
           backdropFilter: 'blur(16px)'
         }}

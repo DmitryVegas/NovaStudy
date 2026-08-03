@@ -299,15 +299,18 @@ body.light-theme .nav-cta-btn {
   }
 
   .cabinet-modal-overlay {
-    padding: 6px !important;
+    padding: 4px !important;
+    padding-top: 6px !important;
+    align-items: flex-start !important;
   }
 
   .cabinet-modal-container {
     flex-direction: column !important;
     width: 98vw !important;
     max-width: 100vw !important;
-    height: 94vh !important;
-    max-height: 96vh !important;
+    height: 95vh !important;
+    max-height: 97vh !important;
+    margin-top: 0 !important;
     border-radius: 16px !important;
   }
 

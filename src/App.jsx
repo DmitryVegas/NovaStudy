@@ -24,29 +24,29 @@ export default function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCabinetOpen, setIsCabinetOpen] = useState(false);
 
-  // Auto-restore Cabinet Open State ONLY IF user had the Cabinet Modal open before page refresh
+  // Auto-restore Cabinet Open State when user is logged in, UNLESS explicitly closed by user
   useEffect(() => {
     if (currentUser) {
-      const savedCabinetState = localStorage.getItem('nova_study_cabinet_open');
-      if (savedCabinetState === 'true') {
+      const isExplicitlyClosed = localStorage.getItem('nova_study_cabinet_closed') === 'true';
+      if (!isExplicitlyClosed) {
         setIsCabinetOpen(true);
       } else {
         setIsCabinetOpen(false);
       }
     } else {
       setIsCabinetOpen(false);
-      localStorage.removeItem('nova_study_cabinet_open');
+      localStorage.removeItem('nova_study_cabinet_closed');
     }
   }, [currentUser]);
 
   const handleOpenCabinet = () => {
     setIsCabinetOpen(true);
-    localStorage.setItem('nova_study_cabinet_open', 'true');
+    localStorage.setItem('nova_study_cabinet_closed', 'false');
   };
 
   const handleCloseCabinet = () => {
     setIsCabinetOpen(false);
-    localStorage.setItem('nova_study_cabinet_open', 'false');
+    localStorage.setItem('nova_study_cabinet_closed', 'true');
   };
 
   useEffect(() => {
