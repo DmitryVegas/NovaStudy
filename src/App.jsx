@@ -24,29 +24,31 @@ export default function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCabinetOpen, setIsCabinetOpen] = useState(false);
 
-  // Auto-restore Cabinet Open State when user is logged in, UNLESS explicitly closed by user
+  // Precise Cabinet State Restoration on Page Refresh
+  // Main Menu Refresh -> STAYS ON MAIN MENU
+  // Cabinet Refresh -> STAYS IN CABINET
   useEffect(() => {
     if (currentUser) {
-      const isExplicitlyClosed = localStorage.getItem('nova_study_cabinet_closed') === 'true';
-      if (!isExplicitlyClosed) {
+      const isCabinetActive = localStorage.getItem('nova_study_cabinet_active') === 'true';
+      if (isCabinetActive) {
         setIsCabinetOpen(true);
       } else {
         setIsCabinetOpen(false);
       }
     } else {
       setIsCabinetOpen(false);
-      localStorage.removeItem('nova_study_cabinet_closed');
+      localStorage.removeItem('nova_study_cabinet_active');
     }
   }, [currentUser]);
 
   const handleOpenCabinet = () => {
     setIsCabinetOpen(true);
-    localStorage.setItem('nova_study_cabinet_closed', 'false');
+    localStorage.setItem('nova_study_cabinet_active', 'true');
   };
 
   const handleCloseCabinet = () => {
     setIsCabinetOpen(false);
-    localStorage.setItem('nova_study_cabinet_closed', 'true');
+    localStorage.setItem('nova_study_cabinet_active', 'false');
   };
 
   useEffect(() => {
