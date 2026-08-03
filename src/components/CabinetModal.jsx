@@ -328,6 +328,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
             background: isLight ? '#ffffff' : '#0f172a',
             border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
             overflow: 'hidden',
+            overflowX: 'hidden',
             boxShadow: isLight ? '0 25px 60px rgba(15, 23, 42, 0.15)' : '0 25px 60px rgba(0, 0, 0, 0.5)',
             color: isLight ? '#0f172a' : '#fff'
           }}
@@ -539,8 +540,8 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
             </button>
           </div>
 
-          {/* Main Content Area */}
-          <div style={{ flex: 1, padding: '32px 32px 32px 32px', overflowY: 'auto' }}>
+          {/* Main Content Area - Strictly OverflowX Hidden to block horizontal scrollbar */}
+          <div style={{ flex: 1, padding: '32px 32px 32px 32px', overflowY: 'auto', overflowX: 'hidden' }}>
             {/* Student Status View */}
             {currentUser.role === 'student' && activeTab === 'status' && (
               <div>
@@ -737,9 +738,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   </motion.div>
                 )}
 
-                {/* Filtered Students List with Smooth Fluid Animation */}
-                <motion.div layout style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <AnimatePresence mode="popLayout">
+                {/* Filtered Students List with Clean Non-Overflow Animations */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', overflowX: 'hidden' }}>
+                  <AnimatePresence>
                     {filteredStudents.length === 0 ? (
                       <motion.div
                         key="no-students-empty"
@@ -758,11 +759,10 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         return (
                           <motion.div
                             key={st.id}
-                            layout
-                            initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.96, y: -12 }}
-                            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
                             style={{
                               padding: '24px',
                               display: 'flex',
@@ -991,7 +991,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       })
                     )}
                   </AnimatePresence>
-                </motion.div>
+                </div>
               </div>
             )}
 
@@ -1178,7 +1178,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       />
                     </div>
 
-                    {/* Role Filter Toggle Buttons with FLUID SLIDING BACKGROUND ANIMATION (layoutId) */}
+                    {/* Role Filter Toggle Buttons with FLUID SLIDING BACKGROUND ANIMATION */}
                     <div style={{
                       display: 'flex',
                       gap: '4px',
@@ -1236,9 +1236,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     </div>
                   </div>
 
-                  {/* Users List with Smooth Layout & Exit Animations */}
-                  <motion.div layout style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <AnimatePresence mode="popLayout">
+                  {/* Users List with Clean Non-Overflow Layout Animations */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowX: 'hidden' }}>
+                    <AnimatePresence>
                       {filteredAccountUsers.length === 0 ? (
                         <motion.div
                           key="empty-account-search"
@@ -1262,11 +1262,10 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                           return (
                             <motion.div
                               key={usr.id}
-                              layout
-                              initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.96, y: -12 }}
-                              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.2 }}
                               style={{
                                 padding: '16px 20px',
                                 borderRadius: '16px',
@@ -1354,7 +1353,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         })
                       )}
                     </AnimatePresence>
-                  </motion.div>
+                  </div>
                 </div>
               </div>
             )}
