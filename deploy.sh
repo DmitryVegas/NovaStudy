@@ -9,7 +9,8 @@ echo "🔒 1/6 Granting full file ownership to ubuntu user..."
 sudo chown -R ubuntu:ubuntu ~/NovaStudy
 sudo chmod -R 755 ~/NovaStudy
 
-echo "🔄 2/6 Fetching latest code from GitHub..."
+echo "🔄 2/6 Resetting & Fetching latest code from GitHub..."
+git reset --hard origin/main
 git pull origin main
 
 echo "📦 3/6 Installing dependencies..."
