@@ -14,9 +14,11 @@ app.use(cors());
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
-const USERS_FILE = process.env.USERS_FILE || path.join(__dirname, 'server_db_users.json');
-const LEADS_FILE = process.env.LEADS_FILE || path.join(__dirname, 'server_db_leads.json');
-console.log(`[SERVER DB PATHS] USERS_FILE=${USERS_FILE}, LEADS_FILE=${LEADS_FILE}`);
+// ABSOLUTE STRICT PATH TO ORACLE CLOUD VPS DATABASE FILES
+const USERS_FILE = process.env.USERS_FILE || '/home/ubuntu/NovaStudy/server_db_users.json';
+const LEADS_FILE = process.env.LEADS_FILE || '/home/ubuntu/NovaStudy/server_db_leads.json';
+
+console.log(`[SERVER DB STRICT PATHS] USERS_FILE=${USERS_FILE}, LEADS_FILE=${LEADS_FILE}`);
 
 const DEFAULT_ADMIN = {
   id: 'admin_darkxan',
@@ -30,9 +32,14 @@ const DEFAULT_ADMIN = {
 
 // Atomic JSON file write helper to prevent 0-byte truncation on crash/interruption
 function atomicWriteJSONSync(filePath, data) {
-  const tempPath = `${filePath}.${Date.now()}.${Math.random().toString(36).substring(2)}.tmp`;
-  fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
-  fs.renameSync(tempPath, filePath);
+  try {
+    const tempPath = `${filePath}.${Date.now()}.${Math.random().toString(36).substring(2)}.tmp`;
+    fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
+    fs.renameSync(tempPath, filePath);
+  } catch (e) {
+    // Direct fallback write if rename fails
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+  }
 }
 
 // Ensure DB files exist and preserve non-empty valid JSON without accidental reset
@@ -103,7 +110,7 @@ app.post(['/api/users', '/users'], (req, res) => {
     const users = req.body;
     if (Array.isArray(users) && users.length > 0) {
       atomicWriteJSONSync(USERS_FILE, users);
-      console.log(`[API POST SUCCESS] Saved ${users.length} users to disk.`);
+      console.log(`[API POST SUCCESS] Saved ${users.length} users to disk at ${USERS_FILE}.`);
       res.setHeader('Content-Type', 'application/json');
       res.status(200).json({ success: true, count: users.length });
     } else {
