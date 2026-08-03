@@ -2,17 +2,21 @@ import React, { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Lock, User, Check, KeyRound, Sparkles } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
+import { ThemeContext } from '../context/ThemeContext';
 import { translations } from '../data/translations';
 
 export default function LoginModal({ isOpen, onClose, currentLang, onLoginSuccess }) {
   const { login } = useContext(AuthContext);
+  const { theme } = useContext(ThemeContext);
+  const isLight = theme === 'light';
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // LOCK BODY SCROLLING WHEN MODAL IS OPEN (Request 2)
+  // LOCK BODY SCROLLING WHEN MODAL IS OPEN
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -72,7 +76,7 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
           alignItems: 'center',
           justifyContent: 'center',
           padding: '20px',
-          background: 'rgba(7, 10, 18, 0.88)',
+          background: isLight ? 'rgba(15, 23, 42, 0.65)' : 'rgba(7, 10, 18, 0.88)',
           backdropFilter: 'blur(14px)'
         }}
       >
@@ -80,16 +84,16 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="glass-panel"
           style={{
             maxWidth: '440px',
             width: '100%',
             position: 'relative',
             borderRadius: '24px',
-            background: '#0e1424',
-            border: '1px solid rgba(0, 240, 255, 0.3)',
+            background: isLight ? '#ffffff' : '#0e1424',
+            border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(37, 99, 235, 0.3)',
             padding: '36px',
-            boxShadow: '0 25px 60px rgba(0, 240, 255, 0.25)'
+            boxShadow: isLight ? '0 25px 60px rgba(15, 23, 42, 0.15)' : '0 25px 60px rgba(0, 0, 0, 0.5)',
+            color: isLight ? '#0f172a' : '#ffffff'
           }}
         >
           {/* Close X Button - Positioned Strictly Inside Modal Window Top-Right */}
@@ -100,16 +104,18 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
               position: 'absolute',
               top: '18px',
               right: '18px',
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: 'none',
-              color: '#fff',
-              width: '36px',
-              height: '36px',
+              background: isLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255, 255, 255, 0.08)',
+              border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
+              color: isLight ? '#0f172a' : '#ffffff',
+              width: '38px',
+              height: '38px',
               borderRadius: '50%',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              transition: 'all 0.2s ease'
             }}
           >
             <X size={20} />
@@ -122,22 +128,22 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
                 width: '56px',
                 height: '56px',
                 borderRadius: '16px',
-                background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(37, 99, 235, 0.2) 100%)',
-                border: '1px solid rgba(0, 240, 255, 0.4)',
+                background: isLight ? 'rgba(37, 99, 235, 0.1)' : 'rgba(37, 99, 235, 0.2)',
+                border: isLight ? '1px solid rgba(37, 99, 235, 0.25)' : '1px solid rgba(37, 99, 235, 0.4)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#00f0ff',
+                color: isLight ? '#2563eb' : '#60a5fa',
                 margin: '0 auto 16px auto'
               }}
             >
               <KeyRound size={28} />
             </div>
 
-            <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', textAlign: 'center', marginBottom: '6px' }}>
+            <h2 style={{ fontSize: '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', textAlign: 'center', marginBottom: '6px' }}>
               {t.loginTitle}
             </h2>
-            <p style={{ fontSize: '13px', color: '#9ca3af', textAlign: 'center' }}>
+            <p style={{ fontSize: '13px', color: isLight ? '#64748b' : '#9ca3af', textAlign: 'center' }}>
               {t.loginSubtitle}
             </p>
           </div>
@@ -164,11 +170,11 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
           {/* Login Form */}
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '13px', color: '#d1d5db', fontWeight: 600, marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#d1d5db', fontWeight: 600, marginBottom: '6px' }}>
                 {t.usernameLabel}
               </label>
               <div style={{ position: 'relative' }}>
-                <User size={18} color="#6b7280" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                <User size={18} color={isLight ? '#94a3b8' : '#6b7280'} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
                   required
@@ -177,11 +183,11 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
                   onChange={(e) => setUsername(e.target.value)}
                   style={{
                     width: '100%',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
+                    border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
                     borderRadius: '12px',
                     padding: '12px 16px 12px 42px',
-                    color: '#fff',
+                    color: isLight ? '#0f172a' : '#fff',
                     fontSize: '14px',
                     outline: 'none'
                   }}
@@ -190,11 +196,11 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '13px', color: '#d1d5db', fontWeight: 600, marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#d1d5db', fontWeight: 600, marginBottom: '6px' }}>
                 {t.passwordLabel}
               </label>
               <div style={{ position: 'relative' }}>
-                <Lock size={18} color="#6b7280" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                <Lock size={18} color={isLight ? '#94a3b8' : '#6b7280'} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="password"
                   required
@@ -203,11 +209,11 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
                   onChange={(e) => setPassword(e.target.value)}
                   style={{
                     width: '100%',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
+                    border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
                     borderRadius: '12px',
                     padding: '12px 16px 12px 42px',
-                    color: '#fff',
+                    color: isLight ? '#0f172a' : '#fff',
                     fontSize: '14px',
                     outline: 'none'
                   }}
@@ -221,14 +227,30 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                style={{ accentColor: '#00f0ff', width: '16px', height: '16px', cursor: 'pointer' }}
+                style={{ accentColor: '#2563eb', width: '16px', height: '16px', cursor: 'pointer' }}
               />
-              <span style={{ fontSize: '13px', color: '#9ca3af', fontWeight: 500 }}>
+              <span style={{ fontSize: '13px', color: isLight ? '#64748b' : '#9ca3af', fontWeight: 500 }}>
                 {t.rememberMe}
               </span>
             </label>
 
-            <button type="submit" disabled={loading} className="btn-cyan" style={{ justifyContent: 'center', padding: '14px', fontSize: '15px', marginTop: '8px', opacity: loading ? 0.7 : 1 }}>
+            <button type="submit" disabled={loading} style={{
+              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+              color: '#ffffff',
+              fontWeight: 700,
+              borderRadius: '12px',
+              padding: '14px',
+              fontSize: '15px',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              marginTop: '8px',
+              opacity: loading ? 0.7 : 1
+            }}>
               <Sparkles size={16} />
               <span>{loading ? 'Проверка...' : t.btnLogin}</span>
             </button>
