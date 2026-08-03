@@ -5,6 +5,14 @@ import { translations } from '../data/translations';
 import { config } from '../data/config';
 
 export default function ConsultationModal({ isOpen, onClose, selectedUniversity, currentLang, onLeadSubmitted }) {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -14,7 +22,7 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // LOCK BODY SCROLLING WHEN MODAL IS OPEN (Request 2)
+  // LOCK BODY SCROLLING WHEN MODAL IS OPEN
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -90,7 +98,7 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '20px',
+          padding: isMobile ? '12px' : '20px',
           background: 'rgba(7, 10, 18, 0.88)',
           backdropFilter: 'blur(14px)'
         }}
@@ -102,13 +110,13 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
           className="glass-panel"
           style={{
             maxWidth: '560px',
-            width: '100%',
+            width: isMobile ? '94vw' : '100%',
             position: 'relative',
-            borderRadius: '24px',
+            borderRadius: isMobile ? '20px' : '24px',
             background: '#0e1424',
-            border: '1px solid rgba(0, 240, 255, 0.3)',
-            padding: '32px',
-            boxShadow: '0 25px 60px rgba(0, 240, 255, 0.25)'
+            border: '1px solid rgba(37, 99, 235, 0.3)',
+            padding: isMobile ? '24px 18px' : '32px',
+            boxShadow: '0 25px 60px rgba(37, 99, 235, 0.25)'
           }}
         >
           {/* Close Button strictly inside top right */}
@@ -120,8 +128,8 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
             title="Закрыть окно"
             style={{
               position: 'absolute',
-              top: '20px',
-              right: '20px',
+              top: isMobile ? '14px' : '20px',
+              right: isMobile ? '14px' : '20px',
               background: 'rgba(255, 255, 255, 0.08)',
               border: 'none',
               color: '#fff',
@@ -139,26 +147,23 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
 
           {!isSubmitted ? (
             <div>
-              <div className="badge-pill" style={{ marginBottom: '12px' }}>
-                <Sparkles size={14} />
-                <span>Nova Study Advisor</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <Sparkles size={18} color="#60a5fa" />
+                <span style={{ fontSize: '12px', fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  Nova Study Education
+                </span>
               </div>
 
-              <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
+              <h3 style={{ fontSize: isMobile ? '19px' : '22px', fontWeight: 800, color: '#fff', marginBottom: '8px', lineHeight: 1.2 }}>
                 {t.title}
-              </h2>
-              {selectedUniversity && (
-                <div style={{ color: '#00f0ff', fontSize: '13px', fontWeight: 700, marginBottom: '12px' }}>
-                  🎯 {t.selectedUni || 'Выбранный ВУЗ'}: {selectedUniversity.name}
-                </div>
-              )}
-              <p style={{ fontSize: '14px', color: '#9ca3af', marginBottom: '24px' }}>
-                {t.subtitle}
+              </h3>
+              <p style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '24px', lineHeight: 1.5 }}>
+                {selectedUniversity ? `Заявка в университет: ${selectedUniversity.name}` : t.subtitle}
               </p>
 
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', color: '#d1d5db', fontWeight: 600, marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', color: '#cbd5e1', marginBottom: '6px', fontWeight: 600 }}>
                     {t.nameLabel} *
                   </label>
                   <input
@@ -169,10 +174,10 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     style={{
                       width: '100%',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '12px',
                       padding: '12px 16px',
+                      borderRadius: '12px',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
                       color: '#fff',
                       fontSize: '14px',
                       outline: 'none'
@@ -181,7 +186,7 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', color: '#d1d5db', fontWeight: 600, marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', color: '#cbd5e1', marginBottom: '6px', fontWeight: 600 }}>
                     {t.phoneLabel} *
                   </label>
                   <input
@@ -192,10 +197,10 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     style={{
                       width: '100%',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '12px',
                       padding: '12px 16px',
+                      borderRadius: '12px',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
                       color: '#fff',
                       fontSize: '14px',
                       outline: 'none'
@@ -203,9 +208,9 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', color: '#d1d5db', fontWeight: 600, marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '13px', color: '#cbd5e1', marginBottom: '6px', fontWeight: 600 }}>
                       {t.programLabel}
                     </label>
                     <select
@@ -213,24 +218,24 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
                       onChange={(e) => setFormData({ ...formData, program: e.target.value })}
                       style={{
                         width: '100%',
-                        background: '#0e1424',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        padding: '12px 16px',
                         borderRadius: '12px',
-                        padding: '12px',
+                        background: '#090d16',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
                         color: '#fff',
                         fontSize: '13px',
                         outline: 'none'
                       }}
                     >
                       <option value="language">Языковые курсы (D-4)</option>
-                      <option value="bachelor">Бакалавриат (D-2)</option>
-                      <option value="master">Магистратура (D-2)</option>
-                      <option value="gks">Грант GKS (100%)</option>
+                      <option value="bachelor">Бакалавриат (D-2-2)</option>
+                      <option value="master">Магистратура (D-2-3)</option>
+                      <option value="gks">Грант GKS</option>
                     </select>
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', color: '#d1d5db', fontWeight: 600, marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '13px', color: '#cbd5e1', marginBottom: '6px', fontWeight: 600 }}>
                       {t.yearLabel}
                     </label>
                     <select
@@ -238,84 +243,93 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
                       onChange={(e) => setFormData({ ...formData, year: e.target.value })}
                       style={{
                         width: '100%',
-                        background: '#0e1424',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        padding: '12px 16px',
                         borderRadius: '12px',
-                        padding: '12px',
+                        background: '#090d16',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
                         color: '#fff',
                         fontSize: '13px',
                         outline: 'none'
                       }}
                     >
-                      <option value="2026">2026 год</option>
-                      <option value="2027">2027 год</option>
+                      <option value="2026">2026 год (Осень)</option>
+                      <option value="2027">2027 год (Весна)</option>
                     </select>
                   </div>
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', color: '#d1d5db', fontWeight: 600, marginBottom: '6px' }}>
-                    {t.telegramLabel}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="@username"
-                    value={formData.messenger}
-                    onChange={(e) => setFormData({ ...formData, messenger: e.target.value })}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '12px',
-                      padding: '12px 16px',
-                      color: '#fff',
-                      fontSize: '14px',
-                      outline: 'none'
-                    }}
-                  />
-                </div>
-
-                <button type="submit" className="btn-cyan" style={{ justifyContent: 'center', padding: '14px', fontSize: '16px', marginTop: '10px' }}>
-                  <Send size={18} />
+                <button
+                  type="submit"
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '14px',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontWeight: 800,
+                    fontSize: '15px',
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    marginTop: '8px'
+                  }}
+                >
+                  <Send size={16} />
                   <span>{t.btnSubmit}</span>
                 </button>
               </form>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(0, 240, 255, 0.15)', color: '#00f0ff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <div
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  color: '#10b981',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px auto'
+                }}
+              >
                 <CheckCircle2 size={36} />
               </div>
+
               <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
                 {t.successTitle}
               </h3>
-              <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '24px' }}>
+              <p style={{ fontSize: '14px', color: '#9ca3af', marginBottom: '24px', lineHeight: 1.5 }}>
                 {t.successDesc}
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <button
-                  onClick={handleTelegramClick}
-                  style={{
-                    background: 'linear-gradient(135deg, #229ED9 0%, #0088cc 100%)',
-                    color: '#fff',
-                    border: 'none',
-                    padding: '16px',
-                    borderRadius: '14px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    fontSize: '16px',
-                    boxShadow: '0 4px 20px rgba(34, 158, 217, 0.4)'
-                  }}
-                >
-                  <MessageCircle size={22} />
-                  <span>{t.btnTelegram}</span>
-                </button>
-              </div>
+              <button
+                onClick={handleTelegramClick}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '14px',
+                  background: 'linear-gradient(135deg, #229ED9 0%, #0088cc 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  fontWeight: 800,
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  boxShadow: '0 8px 24px rgba(34, 158, 217, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <MessageCircle size={18} />
+                <span>{t.btnTelegram}</span>
+              </button>
             </div>
           )}
         </motion.div>

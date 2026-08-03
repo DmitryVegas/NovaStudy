@@ -152,10 +152,11 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
           {currentUser ? (
             <button
               onClick={onOpenCabinet}
+              className="desktop-btn"
               style={{
-                background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(0, 240, 255, 0.12)',
-                border: isLight ? '1px solid rgba(2, 132, 199, 0.4)' : '1px solid rgba(0, 240, 255, 0.4)',
-                color: isLight ? '#0284c7' : '#00f0ff',
+                background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(37, 99, 235, 0.15)',
+                border: isLight ? '1px solid rgba(2, 132, 199, 0.4)' : '1px solid rgba(37, 99, 235, 0.4)',
+                color: isLight ? '#0284c7' : '#60a5fa',
                 padding: '8px 16px',
                 borderRadius: '9999px',
                 fontSize: '13px',
@@ -172,6 +173,7 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
           ) : (
             <button
               onClick={onOpenLogin}
+              className="desktop-btn"
               style={{
                 background: isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.08)',
                 border: isLight ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.15)',
@@ -186,7 +188,7 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
                 gap: '8px'
               }}
             >
-              <LogIn size={15} color={isLight ? '#0284c7' : '#00f0ff'} />
+              <LogIn size={15} color={isLight ? '#0284c7' : '#60a5fa'} />
               <span>{t.cabinet || 'Кабинет'}</span>
             </button>
           )}

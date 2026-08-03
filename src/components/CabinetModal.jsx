@@ -20,6 +20,15 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
   const { theme } = useContext(ThemeContext);
   const isLight = theme === 'light';
 
+  // Responsive Screen Listener
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [activeTab, setActiveTab] = useState('status'); // status, profile, docs, manage_students, create_account
   const [passportSearch, setPassportSearch] = useState('');
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
@@ -309,7 +318,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '20px',
+          padding: isMobile ? '8px' : '20px',
           background: isLight ? 'rgba(15, 23, 42, 0.65)' : 'rgba(7, 10, 18, 0.92)',
           backdropFilter: 'blur(16px)'
         }}
@@ -320,11 +329,12 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           style={{
             maxWidth: '1050px',
-            width: '100%',
-            height: '85vh',
+            width: isMobile ? '98vw' : '100%',
+            height: isMobile ? '94vh' : '85vh',
             display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
             position: 'relative',
-            borderRadius: '24px',
+            borderRadius: isMobile ? '16px' : '24px',
             background: isLight ? '#ffffff' : '#0f172a',
             border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
             overflow: 'hidden',
@@ -339,14 +349,14 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
             title="Закрыть окно"
             style={{
               position: 'absolute',
-              top: '18px',
-              right: '18px',
+              top: isMobile ? '12px' : '18px',
+              right: isMobile ? '12px' : '18px',
               zIndex: 100,
-              background: isLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255, 255, 255, 0.08)',
-              border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
+              background: isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.12)',
+              border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.2)',
               color: isLight ? '#0f172a' : '#ffffff',
-              width: '38px',
-              height: '38px',
+              width: isMobile ? '34px' : '38px',
+              height: isMobile ? '34px' : '38px',
               borderRadius: '50%',
               cursor: 'pointer',
               display: 'flex',
@@ -356,111 +366,158 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
               transition: 'all 0.2s ease'
             }}
           >
-            <X size={20} />
+            <X size={isMobile ? 18 : 20} />
           </button>
 
           {/* Sidebar Navigation */}
           <div
             style={{
-              width: '260px',
+              width: isMobile ? '100%' : '260px',
               background: isLight ? '#f8fafc' : '#090d16',
-              borderRight: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
-              padding: '24px 16px',
+              borderRight: isMobile ? 'none' : (isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)'),
+              borderBottom: isMobile ? (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.08)') : 'none',
+              padding: isMobile ? '14px 12px 10px 12px' : '24px 16px',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between',
+              justifyContent: isMobile ? 'flex-start' : 'space-between',
               flexShrink: 0
             }}
           >
             <div>
-              {/* User Bio Badge */}
+              {/* User Bio Badge + Logout on Mobile Top Row */}
               <div style={{
-                padding: '14px',
+                padding: isMobile ? '10px 12px' : '14px',
                 background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.04)',
-                borderRadius: '16px',
-                marginBottom: '20px',
+                borderRadius: '14px',
+                marginBottom: isMobile ? '10px' : '20px',
                 border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
-                boxShadow: isLight ? '0 4px 12px rgba(0, 0, 0, 0.03)' : 'none'
+                boxShadow: isLight ? '0 4px 12px rgba(0, 0, 0, 0.03)' : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingRight: isMobile ? '46px' : '14px' // padding for top close button
               }}>
-                <div style={{ fontSize: '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff' }}>{currentUser.name || currentUser.username}</div>
-                <div style={{
-                  display: 'inline-block',
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  background: currentUser.role === 'admin' ? '#d97706' : currentUser.role === 'staff' ? '#2563eb' : '#0284c7',
-                  color: '#ffffff',
-                  padding: '3px 10px',
-                  borderRadius: '8px',
-                  marginTop: '6px'
-                }}>
-                  {currentUser.role === 'admin' ? tAuth.adminBadge : currentUser.role === 'staff' ? tAuth.staffBadge : tAuth.studentBadge}
+                <div>
+                  <div style={{ fontSize: isMobile ? '14px' : '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff' }}>
+                    {currentUser.name || currentUser.username}
+                  </div>
+                  <div style={{
+                    display: 'inline-block',
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    background: currentUser.role === 'admin' ? '#d97706' : currentUser.role === 'staff' ? '#2563eb' : '#0284c7',
+                    color: '#ffffff',
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    marginTop: '4px'
+                  }}>
+                    {currentUser.role === 'admin' ? tAuth.adminBadge : currentUser.role === 'staff' ? tAuth.staffBadge : tAuth.studentBadge}
+                  </div>
                 </div>
+
+                {isMobile && (
+                  <button
+                    onClick={() => {
+                      logout();
+                      onClose();
+                    }}
+                    style={{
+                      background: 'rgba(244, 63, 94, 0.12)',
+                      border: '1px solid rgba(244, 63, 94, 0.3)',
+                      color: '#f43f5e',
+                      borderRadius: '8px',
+                      padding: '6px 10px',
+                      fontWeight: 700,
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <LogOut size={13} />
+                    <span>{tAuth.logout}</span>
+                  </button>
+                )}
               </div>
 
-              {/* Tabs */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {/* Tabs Container - Scrollable horizontal row on Mobile */}
+              <div style={{
+                display: 'flex',
+                flexDirection: isMobile ? 'row' : 'column',
+                overflowX: isMobile ? 'auto' : 'visible',
+                gap: isMobile ? '6px' : '8px',
+                WebkitOverflowScrolling: 'touch',
+                paddingBottom: isMobile ? '4px' : '0'
+              }}>
                 {currentUser.role === 'student' && (
                   <>
                     <button
                       onClick={() => setActiveTab('status')}
                       style={{
-                        padding: '12px 14px',
+                        padding: isMobile ? '8px 12px' : '12px 14px',
                         borderRadius: '12px',
                         background: activeTab === 'status' ? (isLight ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.2)') : 'transparent',
                         color: activeTab === 'status' ? (isLight ? '#2563eb' : '#60a5fa') : (isLight ? '#64748b' : '#9ca3af'),
                         border: 'none',
                         textAlign: 'left',
                         fontWeight: 700,
-                        fontSize: '14px',
+                        fontSize: isMobile ? '12px' : '14px',
+                        whiteSpace: isMobile ? 'nowrap' : 'normal',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px'
+                        gap: '8px',
+                        flexShrink: 0
                       }}
                     >
-                      <Layers size={18} />
+                      <Layers size={isMobile ? 16 : 18} />
                       <span>{t.tabStatus}</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('profile')}
                       style={{
-                        padding: '12px 14px',
+                        padding: isMobile ? '8px 12px' : '12px 14px',
                         borderRadius: '12px',
                         background: activeTab === 'profile' ? (isLight ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.2)') : 'transparent',
                         color: activeTab === 'profile' ? (isLight ? '#2563eb' : '#60a5fa') : (isLight ? '#64748b' : '#9ca3af'),
                         border: 'none',
                         textAlign: 'left',
                         fontWeight: 700,
-                        fontSize: '14px',
+                        fontSize: isMobile ? '12px' : '14px',
+                        whiteSpace: isMobile ? 'nowrap' : 'normal',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px'
+                        gap: '8px',
+                        flexShrink: 0
                       }}
                     >
-                      <User size={18} />
+                      <User size={isMobile ? 16 : 18} />
                       <span>{t.tabProfile}</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('docs')}
                       style={{
-                        padding: '12px 14px',
+                        padding: isMobile ? '8px 12px' : '12px 14px',
                         borderRadius: '12px',
                         background: activeTab === 'docs' ? (isLight ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.2)') : 'transparent',
                         color: activeTab === 'docs' ? (isLight ? '#2563eb' : '#60a5fa') : (isLight ? '#64748b' : '#9ca3af'),
                         border: 'none',
                         textAlign: 'left',
                         fontWeight: 700,
-                        fontSize: '14px',
+                        fontSize: isMobile ? '12px' : '14px',
+                        whiteSpace: isMobile ? 'nowrap' : 'normal',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px'
+                        gap: '8px',
+                        flexShrink: 0
                       }}
                     >
-                      <FileText size={18} />
+                      <FileText size={isMobile ? 16 : 18} />
                       <span>{t.tabDocs}</span>
                     </button>
                   </>
@@ -471,42 +528,46 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     <button
                       onClick={() => setActiveTab('manage_students')}
                       style={{
-                        padding: '12px 14px',
+                        padding: isMobile ? '8px 12px' : '12px 14px',
                         borderRadius: '12px',
                         background: activeTab === 'manage_students' || activeTab === 'status' ? (isLight ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.2)') : 'transparent',
                         color: activeTab === 'manage_students' || activeTab === 'status' ? (isLight ? '#2563eb' : '#60a5fa') : (isLight ? '#64748b' : '#9ca3af'),
                         border: 'none',
                         textAlign: 'left',
                         fontWeight: 700,
-                        fontSize: '14px',
+                        fontSize: isMobile ? '12px' : '14px',
+                        whiteSpace: isMobile ? 'nowrap' : 'normal',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px'
+                        gap: '8px',
+                        flexShrink: 0
                       }}
                     >
-                      <GraduationCap size={18} />
+                      <GraduationCap size={isMobile ? 16 : 18} />
                       <span>{t.tabStudents}</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('create_account')}
                       style={{
-                        padding: '12px 14px',
+                        padding: isMobile ? '8px 12px' : '12px 14px',
                         borderRadius: '12px',
                         background: activeTab === 'create_account' ? (isLight ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.2)') : 'transparent',
                         color: activeTab === 'create_account' ? (isLight ? '#2563eb' : '#60a5fa') : (isLight ? '#64748b' : '#9ca3af'),
                         border: 'none',
                         textAlign: 'left',
                         fontWeight: 700,
-                        fontSize: '14px',
+                        fontSize: isMobile ? '12px' : '14px',
+                        whiteSpace: isMobile ? 'nowrap' : 'normal',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px'
+                        gap: '8px',
+                        flexShrink: 0
                       }}
                     >
-                      <UserPlus size={18} />
+                      <UserPlus size={isMobile ? 16 : 18} />
                       <span>{t.tabUsers}</span>
                     </button>
                   </>
@@ -514,38 +575,45 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
               </div>
             </div>
 
-            {/* Logout Button */}
-            <button
-              onClick={() => {
-                logout();
-                onClose();
-              }}
-              style={{
-                background: 'rgba(244, 63, 94, 0.1)',
-                border: '1px solid rgba(244, 63, 94, 0.25)',
-                color: '#f43f5e',
-                borderRadius: '12px',
-                padding: '12px',
-                fontWeight: 700,
-                fontSize: '14px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              <LogOut size={16} />
-              <span>{tAuth.logout}</span>
-            </button>
+            {/* Logout Button on Desktop */}
+            {!isMobile && (
+              <button
+                onClick={() => {
+                  logout();
+                  onClose();
+                }}
+                style={{
+                  background: 'rgba(244, 63, 94, 0.1)',
+                  border: '1px solid rgba(244, 63, 94, 0.25)',
+                  color: '#f43f5e',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <LogOut size={16} />
+                <span>{tAuth.logout}</span>
+              </button>
+            )}
           </div>
 
           {/* Main Content Area - Strictly OverflowX Hidden to block horizontal scrollbar */}
-          <div style={{ flex: 1, padding: '32px 32px 32px 32px', overflowY: 'auto', overflowX: 'hidden' }}>
+          <div style={{
+            flex: 1,
+            padding: isMobile ? '16px 14px' : '32px',
+            overflowY: 'auto',
+            overflowX: 'hidden'
+          }}>
             {/* Student Status View */}
             {currentUser.role === 'student' && activeTab === 'status' && (
               <div>
-                <h3 style={{ fontSize: '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '16px' }}>
                   {t.tabStatus}
                 </h3>
                 <StudentStatusTracker
@@ -560,7 +628,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
             {/* Student Profile View */}
             {currentUser.role === 'student' && activeTab === 'profile' && (
               <div>
-                <h3 style={{ fontSize: '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '16px' }}>
                   {t.tabProfile}
                 </h3>
                 <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px' }}>
@@ -614,12 +682,12 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
             {/* Admin / Staff: Manage Students & Visas */}
             {isSuperUser && (activeTab === 'manage_students' || activeTab === 'status') && (
               <div>
-                <h3 style={{ fontSize: '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '20px', paddingRight: '40px' }}>
+                <h3 style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '16px' }}>
                   {t.manageTitle}
                 </h3>
 
                 {/* Passport, Name & Phone Search Bar + Stage Filter Dropdown + Select All */}
-                <div style={{ marginBottom: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', alignItems: 'center' }}>
+                <div style={{ marginBottom: '20px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', alignItems: 'center' }}>
                   {/* Text & Partial Phone Search Input */}
                   <div style={{ position: 'relative' }}>
                     <Search size={18} color={isLight ? '#3b82f6' : '#60a5fa'} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
@@ -632,7 +700,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         width: '100%',
                         borderRadius: '12px',
                         padding: '12px 16px 12px 44px',
-                        fontSize: '14px',
+                        fontSize: '13px',
                         outline: 'none',
                         background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
                         border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
@@ -684,25 +752,25 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       background: isLight ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.04) 100%)' : 'rgba(255, 255, 255, 0.04)',
                       border: isLight ? '1px solid rgba(37, 99, 235, 0.25)' : '1px solid rgba(255, 255, 255, 0.12)',
                       borderRadius: '16px',
-                      padding: '18px 20px',
-                      marginBottom: '24px',
+                      padding: isMobile ? '14px' : '18px 20px',
+                      marginBottom: '20px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       flexWrap: 'wrap',
-                      gap: '14px'
+                      gap: '12px'
                     }}
                   >
                     <div style={{ fontSize: '14px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff' }}>
                       {t.selectedCount} <span style={{ color: '#3b82f6' }}>{selectedStudentIds.length}</span>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', minWidth: '220px' }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
                       <CustomSelect
                         options={stageOptions}
                         value={bulkStage}
                         onChange={(val) => setBulkStage(Number(val))}
-                        style={{ minWidth: '220px' }}
+                        style={{ width: isMobile ? '100%' : '220px' }}
                       />
 
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: isLight ? '#0f172a' : '#fff', fontSize: '13px', fontWeight: 600 }}>
@@ -728,7 +796,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '6px'
+                          justifyContent: 'center',
+                          gap: '6px',
+                          width: isMobile ? '100%' : 'auto'
                         }}
                       >
                         <Sparkles size={15} />
@@ -739,7 +809,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                 )}
 
                 {/* Filtered Students List with Clean Non-Overflow Animations */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', overflowX: 'hidden' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', overflowX: 'hidden' }}>
                   <AnimatePresence>
                     {filteredStudents.length === 0 ? (
                       <motion.div
@@ -747,7 +817,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        style={{ padding: '40px', background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.02)', borderRadius: '16px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af' }}
+                        style={{ padding: '30px 16px', background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.02)', borderRadius: '16px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af', fontSize: '13px' }}
                       >
                         {t.noStudents}
                       </motion.div>
@@ -764,11 +834,11 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.2 }}
                             style={{
-                              padding: '24px',
+                              padding: isMobile ? '16px' : '24px',
                               display: 'flex',
                               flexDirection: 'column',
-                              gap: '16px',
-                              borderRadius: '20px',
+                              gap: '14px',
+                              borderRadius: '18px',
                               border: isSelected
                                 ? (isLight ? '2px solid #2563eb' : '1px solid #3b82f6')
                                 : (isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)'),
@@ -778,8 +848,8 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                               boxShadow: isLight ? '0 10px 25px rgba(0, 0, 0, 0.04)' : 'none'
                             }}
                           >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
+                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                                 <button
                                   onClick={() => toggleStudentSelect(st.id)}
                                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#3b82f6', marginTop: '2px' }}
@@ -788,23 +858,23 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                                 </button>
 
                                 <div>
-                                  <div style={{ fontSize: '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                  <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                     <span>{st.name || st.username}</span>
                                     <span style={{
-                                      fontSize: '11px',
+                                      fontSize: '10px',
                                       fontWeight: 700,
                                       background: 'rgba(37, 99, 235, 0.15)',
                                       color: isLight ? '#2563eb' : '#60a5fa',
-                                      padding: '3px 10px',
-                                      borderRadius: '8px'
+                                      padding: '2px 8px',
+                                      borderRadius: '6px'
                                     }}>
-                                      {tAuth.usernameLabel}: {st.username}
+                                      {st.username}
                                     </span>
                                   </div>
-                                  <div style={{ fontSize: '13px', color: isLight ? '#475569' : '#cbd5e1', marginTop: '6px', display: 'flex', gap: '16px', flexWrap: 'wrap', fontWeight: 500 }}>
-                                    <span>🏛️ {t.uniLabel}: <strong>{st.university}</strong></span>
-                                    {st.passport && <span style={{ color: isLight ? '#b45309' : '#fbbf24', fontWeight: 700 }}>Passport: {st.passport}</span>}
-                                    <span>📞 {t.phoneLabel}: <strong>{st.phone || 'Не указан'}</strong></span>
+                                  <div style={{ fontSize: '12px', color: isLight ? '#475569' : '#cbd5e1', marginTop: '4px', display: 'flex', gap: '12px', flexWrap: 'wrap', fontWeight: 500 }}>
+                                    <span>🏛️ {st.university}</span>
+                                    {st.passport && <span style={{ color: isLight ? '#b45309' : '#fbbf24', fontWeight: 700 }}>Pass: {st.passport}</span>}
+                                    <span>📞 {st.phone || 'Не указан'}</span>
                                   </div>
                                 </div>
                               </div>
@@ -816,17 +886,17 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                                     background: 'rgba(244, 63, 94, 0.1)',
                                     color: '#f43f5e',
                                     border: '1px solid rgba(244, 63, 94, 0.25)',
-                                    padding: '6px 14px',
+                                    padding: '6px 12px',
                                     borderRadius: '8px',
                                     cursor: 'pointer',
                                     fontSize: '12px',
                                     fontWeight: 600,
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '6px'
+                                    gap: '4px'
                                   }}
                                 >
-                                  <Trash2 size={14} />
+                                  <Trash2 size={13} />
                                   <span>{t.deleteBtn}</span>
                                 </button>
                               )}
@@ -836,15 +906,15 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                             <div style={{
                               background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.02)',
                               border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)',
-                              padding: '16px',
+                              padding: isMobile ? '12px' : '16px',
                               borderRadius: '14px',
                               display: 'flex',
                               flexDirection: 'column',
-                              gap: '14px'
+                              gap: '12px'
                             }}>
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', alignItems: 'center' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', alignItems: 'center' }}>
                                 <div>
-                                  <label style={{ fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t.changeStageLabel}</label>
+                                  <label style={{ fontSize: '11px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t.changeStageLabel}</label>
                                   <CustomSelect
                                     options={stageOptions}
                                     value={st.statusStage || 0}
@@ -854,19 +924,21 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
 
                                 {/* SERIOUS & EXECUTIVE FILE UPLOAD BUTTON */}
                                 <div>
-                                  <label style={{ fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t.attachDocLabel}</label>
+                                  <label style={{ fontSize: '11px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t.attachDocLabel}</label>
                                   <label
                                     style={{
                                       display: 'inline-flex',
                                       alignItems: 'center',
+                                      justifyContent: 'center',
                                       gap: '8px',
-                                      padding: '10px 16px',
+                                      padding: '10px 14px',
+                                      width: isMobile ? '100%' : 'auto',
                                       borderRadius: '10px',
                                       background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.06)',
                                       border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
                                       color: isLight ? '#0f172a' : '#f3f4f6',
                                       fontWeight: 600,
-                                      fontSize: '13px',
+                                      fontSize: '12px',
                                       cursor: 'pointer',
                                       transition: 'all 0.2s ease'
                                     }}
@@ -884,21 +956,21 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                               </div>
 
                               {/* Checkbox for Application Fee (Step 5) Confirmation */}
-                              <div style={{ borderTop: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '10px' }}>
+                              <div style={{ borderTop: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '8px' }}>
                                 <label style={{
                                   display: 'flex',
                                   alignItems: 'center',
-                                  gap: '10px',
+                                  gap: '8px',
                                   cursor: 'pointer',
                                   color: st.feePaid ? (isLight ? '#059669' : '#10b981') : (isLight ? '#d97706' : '#fbbf24'),
-                                  fontSize: '13px',
+                                  fontSize: '12px',
                                   fontWeight: 700
                                 }}>
                                   <input
                                     type="checkbox"
                                     checked={st.feePaid || false}
                                     onChange={(e) => updateUserStatus(st.id, st.statusStage || 0, st.statusNote, e.target.checked)}
-                                    style={{ accentColor: '#10b981', width: '18px', height: '18px', cursor: 'pointer' }}
+                                    style={{ accentColor: '#10b981', width: '16px', height: '16px', cursor: 'pointer' }}
                                   />
                                   <span>{t.feePaidLabel} ({st.feePaid ? 'Подтверждено ✓' : 'Ожидается'})</span>
                                 </label>
@@ -908,37 +980,37 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                             {/* Attached Files List */}
                             {st.documents && st.documents.length > 0 && (
                               <div>
-                                <div style={{ fontSize: '13px', fontWeight: 800, color: isLight ? '#2563eb' : '#60a5fa', marginBottom: '8px' }}>
+                                <div style={{ fontSize: '12px', fontWeight: 800, color: isLight ? '#2563eb' : '#60a5fa', marginBottom: '6px' }}>
                                   📁 {t.docsUploadedCount} {st.documents.length}
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                   {st.documents.map((doc) => (
                                     <div key={doc.id} style={{
                                       background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.02)',
                                       border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)',
                                       borderRadius: '10px',
-                                      padding: '10px 14px',
+                                      padding: '8px 12px',
                                       display: 'flex',
                                       alignItems: 'center',
                                       justifyContent: 'space-between',
                                       flexWrap: 'wrap',
-                                      gap: '8px'
+                                      gap: '6px'
                                     }}>
-                                      <div style={{ fontSize: '13px', color: isLight ? '#0f172a' : '#fff', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <FileText size={16} color="#3b82f6" />
-                                        <span>{doc.name}</span>
+                                      <div style={{ fontSize: '12px', color: isLight ? '#0f172a' : '#fff', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <FileText size={14} color="#3b82f6" />
+                                        <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.name}</span>
                                       </div>
 
-                                      <div style={{ display: 'flex', gap: '6px' }}>
+                                      <div style={{ display: 'flex', gap: '4px' }}>
                                         <a
                                           href={doc.dataUrl}
                                           download={doc.name}
                                           style={{
                                             background: 'rgba(37, 99, 235, 0.15)',
                                             color: isLight ? '#2563eb' : '#60a5fa',
-                                            padding: '4px 10px',
+                                            padding: '3px 8px',
                                             borderRadius: '6px',
-                                            fontSize: '11px',
+                                            fontSize: '10px',
                                             fontWeight: 700,
                                             textDecoration: 'none'
                                           }}
@@ -946,34 +1018,15 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                                           Скачать
                                         </a>
 
-                                        <label style={{
-                                          background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.08)',
-                                          color: isLight ? '#0f172a' : '#fff',
-                                          border: isLight ? '1px solid #cbd5e1' : 'none',
-                                          padding: '4px 10px',
-                                          borderRadius: '6px',
-                                          fontSize: '11px',
-                                          fontWeight: 700,
-                                          cursor: 'pointer'
-                                        }}>
-                                          Заменить
-                                          <input
-                                            type="file"
-                                            accept=".pdf,.png,.jpg,.jpeg"
-                                            style={{ display: 'none' }}
-                                            onChange={(e) => handleFileReplace(e, st.id, doc.id)}
-                                          />
-                                        </label>
-
                                         <button
                                           onClick={() => promptDeleteDocument(st.id, doc.id, doc.name)}
                                           style={{
                                             background: 'rgba(244, 63, 94, 0.12)',
                                             color: '#e11d48',
                                             border: 'none',
-                                            padding: '4px 10px',
+                                            padding: '3px 8px',
                                             borderRadius: '6px',
-                                            fontSize: '11px',
+                                            fontSize: '10px',
                                             fontWeight: 700,
                                             cursor: 'pointer'
                                           }}
@@ -998,13 +1051,13 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
             {/* Admin or Staff: Create Student/Staff Account & Manage ALL System Accounts */}
             {isSuperUser && activeTab === 'create_account' && (
               <div>
-                <h3 style={{ fontSize: '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '16px' }}>
                   {t.createTitle}
                 </h3>
-                <form onSubmit={handleCreateUserSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '540px', marginBottom: '40px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <form onSubmit={handleCreateUserSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '540px', marginBottom: '32px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{tAuth.usernameLabel} *</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{tAuth.usernameLabel} *</label>
                       <input
                         type="text"
                         required
@@ -1013,8 +1066,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         onChange={(e) => setNewAcc({ ...newAcc, username: e.target.value })}
                         style={{
                           width: '100%',
-                          padding: '11px 14px',
-                          borderRadius: '12px',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          fontSize: '13px',
                           background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
                           border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
                           color: isLight ? '#0f172a' : '#fff'
@@ -1022,7 +1076,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{tAuth.passwordLabel} *</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{tAuth.passwordLabel} *</label>
                       <input
                         type="text"
                         required
@@ -1031,8 +1085,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         onChange={(e) => setNewAcc({ ...newAcc, password: e.target.value })}
                         style={{
                           width: '100%',
-                          padding: '11px 14px',
-                          borderRadius: '12px',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          fontSize: '13px',
                           background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
                           border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
                           color: isLight ? '#0f172a' : '#fff'
@@ -1041,9 +1096,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.accountType}</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.accountType}</label>
                       <CustomSelect
                         options={roleOptions}
                         value={newAcc.role}
@@ -1052,7 +1107,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.passportLabel}</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.passportLabel}</label>
                       <input
                         type="text"
                         placeholder="AA12345678"
@@ -1060,8 +1115,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         onChange={(e) => setNewAcc({ ...newAcc, passport: e.target.value })}
                         style={{
                           width: '100%',
-                          padding: '11px 14px',
-                          borderRadius: '12px',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          fontSize: '13px',
                           background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
                           border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
                           color: isLight ? '#0f172a' : '#fff'
@@ -1070,9 +1126,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.nameLabel}</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.nameLabel}</label>
                       <input
                         type="text"
                         placeholder="Азиз Рахимов"
@@ -1080,8 +1136,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         onChange={(e) => setNewAcc({ ...newAcc, name: e.target.value })}
                         style={{
                           width: '100%',
-                          padding: '11px 14px',
-                          borderRadius: '12px',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          fontSize: '13px',
                           background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
                           border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
                           color: isLight ? '#0f172a' : '#fff'
@@ -1090,7 +1147,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.phoneLabel}</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.phoneLabel}</label>
                       <input
                         type="tel"
                         placeholder="+998 90 123 45 67"
@@ -1098,8 +1155,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         onChange={(e) => setNewAcc({ ...newAcc, phone: e.target.value })}
                         style={{
                           width: '100%',
-                          padding: '11px 14px',
-                          borderRadius: '12px',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          fontSize: '13px',
                           background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
                           border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
                           color: isLight ? '#0f172a' : '#fff'
@@ -1109,7 +1167,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.targetUni}</label>
+                    <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.targetUni}</label>
                     <input
                       type="text"
                       placeholder="Seoul National University"
@@ -1117,8 +1175,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       onChange={(e) => setNewAcc({ ...newAcc, university: e.target.value })}
                       style={{
                         width: '100%',
-                        padding: '11px 14px',
-                        borderRadius: '12px',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        fontSize: '13px',
                         background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
                         border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
                         color: isLight ? '#0f172a' : '#fff'
@@ -1131,8 +1190,8 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     color: '#ffffff',
                     fontWeight: 700,
                     borderRadius: '12px',
-                    padding: '14px',
-                    fontSize: '15px',
+                    padding: '12px',
+                    fontSize: '14px',
                     border: 'none',
                     cursor: 'pointer',
                     boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)',
@@ -1147,19 +1206,19 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                 </form>
 
                 {/* ADVANCED ACCOUNTS SEARCH & FILTERING BAR FOR ADMIN AND STAFF */}
-                <div style={{ borderTop: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '32px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-                    <h4 style={{ fontSize: '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Users size={20} color="#3b82f6" />
+                <div style={{ borderTop: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                    <h4 style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Users size={18} color="#3b82f6" />
                       <span>{t.allAccountsTitle || 'Все зарегистрированные аккаунты'} ({filteredAccountUsers.length})</span>
                     </h4>
                   </div>
 
                   {/* Filter controls bar: Name/Phone search + Role toggle buttons */}
-                  <div style={{ marginBottom: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', alignItems: 'center' }}>
+                  <div style={{ marginBottom: '16px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px', alignItems: 'center' }}>
                     {/* Search Input for Name, Username, Passport or 2-4 digit Phone Number */}
                     <div style={{ position: 'relative' }}>
-                      <Search size={18} color="#3b82f6" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                      <Search size={16} color="#3b82f6" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                       <input
                         type="text"
                         placeholder={t.searchUserPlaceholder || "Поиск по ФИО, телефону (+998, 77, 555) или логину..."}
@@ -1167,9 +1226,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         onChange={(e) => setUserAccountSearch(e.target.value)}
                         style={{
                           width: '100%',
-                          borderRadius: '12px',
-                          padding: '12px 16px 12px 44px',
-                          fontSize: '13px',
+                          borderRadius: '10px',
+                          padding: '10px 14px 10px 38px',
+                          fontSize: '12px',
                           outline: 'none',
                           background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
                           border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
@@ -1184,9 +1243,10 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       gap: '4px',
                       background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.04)',
                       padding: '4px',
-                      borderRadius: '14px',
+                      borderRadius: '12px',
                       border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.08)',
-                      position: 'relative'
+                      position: 'relative',
+                      overflowX: isMobile ? 'auto' : 'visible'
                     }}>
                       {[
                         { id: 'all', label: `${t.tabFilterAll || 'Все'} (${users.length})` },
@@ -1202,16 +1262,17 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                             onClick={() => setUserAccountRoleFilter(tab.id)}
                             style={{
                               flex: 1,
-                              padding: '9px 12px',
-                              borderRadius: '10px',
+                              padding: '8px 10px',
+                              borderRadius: '8px',
                               border: 'none',
                               background: 'transparent',
                               color: isActive ? '#ffffff' : (isLight ? '#64748b' : '#94a3b8'),
                               fontWeight: 700,
-                              fontSize: '12px',
+                              fontSize: isMobile ? '11px' : '12px',
                               cursor: 'pointer',
                               position: 'relative',
                               zIndex: 1,
+                              whiteSpace: 'nowrap',
                               transition: 'color 0.2s ease'
                             }}
                           >
@@ -1222,7 +1283,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                                 style={{
                                   position: 'absolute',
                                   inset: 0,
-                                  borderRadius: '10px',
+                                  borderRadius: '8px',
                                   background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                                   boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
                                   zIndex: -1
@@ -1237,7 +1298,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   </div>
 
                   {/* Users List with Clean Non-Overflow Layout Animations */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowX: 'hidden' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowX: 'hidden' }}>
                     <AnimatePresence>
                       {filteredAccountUsers.length === 0 ? (
                         <motion.div
@@ -1245,7 +1306,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          style={{ padding: '30px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af', fontSize: '13px' }}
+                          style={{ padding: '24px 14px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af', fontSize: '13px' }}
                         >
                           {t.noUsersFound || "Аккаунты по вашему запросу не найдены."}
                         </motion.div>
@@ -1267,48 +1328,49 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                               exit={{ opacity: 0, y: -10 }}
                               transition={{ duration: 0.2 }}
                               style={{
-                                padding: '16px 20px',
-                                borderRadius: '16px',
+                                padding: isMobile ? '12px 14px' : '16px 20px',
+                                borderRadius: '14px',
                                 background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.03)',
                                 border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
                                 flexWrap: 'wrap',
-                                gap: '12px'
+                                gap: '10px'
                               }}
                             >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <div style={{
-                                  width: '42px',
-                                  height: '42px',
-                                  borderRadius: '12px',
+                                  width: isMobile ? '36px' : '42px',
+                                  height: isMobile ? '36px' : '42px',
+                                  borderRadius: '10px',
                                   background: usr.role === 'admin' ? 'rgba(217, 119, 6, 0.15)' : usr.role === 'staff' ? 'rgba(37, 99, 235, 0.15)' : 'rgba(2, 132, 199, 0.15)',
                                   color: usr.role === 'admin' ? '#d97706' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  fontWeight: 800
+                                  fontWeight: 800,
+                                  flexShrink: 0
                                 }}>
-                                  {usr.role === 'admin' ? <Shield size={20} /> : usr.role === 'staff' ? <User size={20} /> : <GraduationCap size={20} />}
+                                  {usr.role === 'admin' ? <Shield size={isMobile ? 18 : 20} /> : usr.role === 'staff' ? <User size={isMobile ? 18 : 20} /> : <GraduationCap size={isMobile ? 18 : 20} />}
                                 </div>
 
                                 <div>
-                                  <div style={{ fontSize: '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <div style={{ fontSize: isMobile ? '14px' : '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                                     <span>{usr.name || usr.username}</span>
                                     <span style={{
-                                      fontSize: '10px',
+                                      fontSize: '9px',
                                       fontWeight: 800,
                                       textTransform: 'uppercase',
                                       background: usr.role === 'admin' ? '#d97706' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
                                       color: '#fff',
-                                      padding: '2px 8px',
-                                      borderRadius: '6px'
+                                      padding: '2px 6px',
+                                      borderRadius: '4px'
                                     }}>
                                       {usr.role === 'admin' ? tAuth.adminBadge : usr.role === 'staff' ? tAuth.staffBadge : tAuth.studentBadge}
                                     </span>
                                   </div>
-                                  <div style={{ fontSize: '12px', color: isLight ? '#64748b' : '#9ca3af', marginTop: '4px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                                  <div style={{ fontSize: '11px', color: isLight ? '#64748b' : '#9ca3af', marginTop: '2px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                                     <span>{tAuth.usernameLabel}: <strong>{usr.username}</strong></span>
                                     <span>{tAuth.passwordLabel}: <strong>{usr.password}</strong></span>
                                     {usr.phone && <span>{t.phoneShort || 'Tel'}: <strong>{usr.phone}</strong></span>}
@@ -1319,7 +1381,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                               {/* DELETE USER BUTTON ACCORDING TO ROLE PERMISSIONS */}
                               <div>
                                 {isMainAdminAcc ? (
-                                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#d97706', background: 'rgba(217, 119, 6, 0.12)', padding: '6px 12px', borderRadius: '8px' }}>
+                                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#d97706', background: 'rgba(217, 119, 6, 0.12)', padding: '4px 8px', borderRadius: '6px' }}>
                                     {t.mainAccountBadge || '🔒 Asosiy hisob'}
                                   </span>
                                 ) : canDeleteUser ? (
@@ -1329,17 +1391,17 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                                       background: 'rgba(244, 63, 94, 0.1)',
                                       color: '#f43f5e',
                                       border: '1px solid rgba(244, 63, 94, 0.25)',
-                                      padding: '8px 14px',
-                                      borderRadius: '10px',
+                                      padding: '6px 12px',
+                                      borderRadius: '8px',
                                       cursor: 'pointer',
-                                      fontSize: '12px',
+                                      fontSize: '11px',
                                       fontWeight: 700,
                                       display: 'flex',
                                       alignItems: 'center',
-                                      gap: '6px'
+                                      gap: '4px'
                                     }}
                                   >
-                                    <Trash2 size={14} />
+                                    <Trash2 size={13} />
                                     <span>{t.deleteProfileBtn || 'Profilni o\'chirish'}</span>
                                   </button>
                                 ) : (
@@ -1371,7 +1433,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '20px',
+                padding: '16px',
                 background: 'rgba(7, 10, 18, 0.82)',
                 backdropFilter: 'blur(10px)'
               }}
@@ -1386,7 +1448,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   borderRadius: '20px',
                   background: isLight ? '#ffffff' : '#0e1424',
                   border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                  padding: '28px',
+                  padding: isMobile ? '20px 16px' : '28px',
                   boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
                   color: isLight ? '#0f172a' : '#fff',
                   textAlign: 'center'
@@ -1395,30 +1457,30 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                 {/* Clean Professional Alert Icon */}
                 <div
                   style={{
-                    width: '52px',
-                    height: '52px',
+                    width: '48px',
+                    height: '48px',
                     borderRadius: '14px',
                     background: 'rgba(244, 63, 94, 0.12)',
                     color: '#f43f5e',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    margin: '0 auto 16px auto'
+                    margin: '0 auto 14px auto'
                   }}
                 >
-                  <AlertTriangle size={26} />
+                  <AlertTriangle size={24} />
                 </div>
 
-                <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px', color: isLight ? '#0f172a' : '#ffffff' }}>
+                <h3 style={{ fontSize: '17px', fontWeight: 800, marginBottom: '6px', color: isLight ? '#0f172a' : '#ffffff' }}>
                   {deleteConfirm.title}
                 </h3>
 
-                <p style={{ fontSize: '14px', color: isLight ? '#475569' : '#9ca3af', lineHeight: 1.5, marginBottom: '24px', fontWeight: 500 }}>
+                <p style={{ fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', lineHeight: 1.5, marginBottom: '20px', fontWeight: 500 }}>
                   Вы действительно хотите безвозвратно удалить <strong style={{ color: isLight ? '#2563eb' : '#60a5fa' }}>"{deleteConfirm.itemName}"</strong>?
                 </p>
 
                 {/* Clean Professional Buttons */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   {/* Delete Button */}
                   <button
                     onClick={deleteConfirm.onConfirm}
@@ -1426,9 +1488,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       background: '#e11d48',
                       color: '#ffffff',
                       border: 'none',
-                      padding: '12px 18px',
+                      padding: '11px 16px',
                       borderRadius: '10px',
-                      fontSize: '14px',
+                      fontSize: '13px',
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
@@ -1447,9 +1509,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.06)',
                       color: isLight ? '#334155' : '#cbd5e1',
                       border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                      padding: '12px 18px',
+                      padding: '11px 16px',
                       borderRadius: '10px',
-                      fontSize: '14px',
+                      fontSize: '13px',
                       fontWeight: 600,
                       cursor: 'pointer',
                       display: 'flex',
