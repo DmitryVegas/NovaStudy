@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, User, Shield, GraduationCap, CheckCircle2, Clock, Upload, FileText, Download,
   UserPlus, LogOut, Phone, MapPin, Key, Trash2, Edit3, Sparkles, BookOpen, Layers,
-  Search, CheckSquare, Square, RefreshCw, Filter, AlertTriangle
+  Search, CheckSquare, Square, RefreshCw, Filter, AlertTriangle, Cloud
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
@@ -14,7 +14,8 @@ import { translations } from '../data/translations';
 export default function CabinetModal({ isOpen, onClose, currentLang }) {
   const {
     currentUser, users, logout, createUser, updateUserStatus, updateBulkUserStatus,
-    uploadUserDoc, deleteUserDoc, replaceUserDoc, updateUserProfile, deleteUser
+    uploadUserDoc, deleteUserDoc, replaceUserDoc, updateUserProfile, deleteUser,
+    syncUsersToServer
   } = useContext(AuthContext);
 
   const { theme } = useContext(ThemeContext);
@@ -26,6 +27,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
   const [bulkStage, setBulkStage] = useState(0);
   const [bulkFeePaid, setBulkFeePaid] = useState(false);
   const [filterStage, setFilterStage] = useState('all'); // Quick Stage Filter for staff/admin
+  const [syncing, setSyncing] = useState(false);
 
   // Priority Delete Confirmation Modal State
   const [deleteConfirm, setDeleteConfirm] = useState({
@@ -190,12 +192,12 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
   };
 
   // Handle Create User
-  const handleCreateUserSubmit = (e) => {
+  const handleCreateUserSubmit = async (e) => {
     e.preventDefault();
     if (!newAcc.username || !newAcc.password) return;
 
-    createUser(newAcc);
-    alert(`Профиль студента "${newAcc.name || newAcc.username}" успешно создан!`);
+    await createUser(newAcc);
+    alert(`Профиль "${newAcc.name || newAcc.username}" сохранен в Базу Данных сервера!`);
     setNewAcc({
       username: '',
       password: '',
@@ -206,6 +208,19 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
       program: 'bachelor',
       passport: ''
     });
+  };
+
+  // Manual Force Sync to Oracle Cloud VPS Server
+  const handleManualSync = async () => {
+    setSyncing(true);
+    try {
+      await syncUsersToServer();
+      alert(`✅ Все профили пользователей (${users.length}) синхронизированы с сервером Oracle Cloud VPS!`);
+    } catch (err) {
+      alert("Ошибка синхронизации с сервером");
+    } finally {
+      setSyncing(false);
+    }
   };
 
   // Handle Profile Update
@@ -341,7 +356,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                 padding: '14px',
                 background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.04)',
                 borderRadius: '16px',
-                marginBottom: '24px',
+                marginBottom: '20px',
                 border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
                 boxShadow: isLight ? '0 4px 12px rgba(0, 0, 0, 0.03)' : 'none'
               }}>
@@ -359,6 +374,33 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   {currentUser.role === 'admin' ? tAuth.adminBadge : currentUser.role === 'staff' ? tAuth.staffBadge : tAuth.studentBadge}
                 </div>
               </div>
+
+              {/* Force Server Sync Button for Admin/Staff */}
+              {isSuperUser && (
+                <button
+                  onClick={handleManualSync}
+                  disabled={syncing}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '12px',
+                    background: 'rgba(2, 132, 199, 0.12)',
+                    border: '1px solid rgba(2, 132, 199, 0.3)',
+                    color: isLight ? '#0284c7' : '#00f0ff',
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    marginBottom: '20px'
+                  }}
+                >
+                  <Cloud size={16} />
+                  <span>{syncing ? 'Синхронизация...' : 'Синхронизировать с БД'}</span>
+                </button>
+              )}
 
               {/* Tabs */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

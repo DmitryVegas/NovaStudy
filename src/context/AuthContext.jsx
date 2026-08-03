@@ -70,8 +70,8 @@ export function AuthProvider({ children }) {
     setUsers(mergedUsers);
     localStorage.setItem('nova_study_users_v2', JSON.stringify(mergedUsers));
 
-    // If merged dataset has more items than server, sync back to Oracle VPS DB immediately!
-    if (serverUsers && mergedUsers.length > serverUsers.length) {
+    // Force sync back to Oracle VPS Server DB if local has extra users!
+    if (mergedUsers.length > 1) {
       try {
         await fetch('/api/users', {
           method: 'POST',
@@ -102,14 +102,24 @@ export function AuthProvider({ children }) {
     localStorage.setItem('nova_study_users_v2', JSON.stringify(updatedUsers));
 
     try {
-      await fetch('/api/users', {
+      const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedUsers)
       });
+      if (res.ok) {
+        console.log("✅ Users successfully saved to Oracle Cloud VPS DB");
+      }
     } catch (err) {
       console.error("Error saving users to backend API:", err);
     }
+  };
+
+  // Explicit Sync Method for Admin UI
+  const syncUsersToServer = async () => {
+    await saveUsers(users);
+    const fresh = await loadUsersFromAPI();
+    return fresh;
   };
 
   // Real-Time Async Login (Always fetches fresh DB from Oracle VPS Server without cache)
@@ -311,7 +321,8 @@ export function AuthProvider({ children }) {
         deleteUserDoc,
         replaceUserDoc,
         updateUserProfile,
-        deleteUser
+        deleteUser,
+        syncUsersToServer
       }}
     >
       {children}
