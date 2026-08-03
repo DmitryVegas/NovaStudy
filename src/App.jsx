@@ -24,12 +24,14 @@ export default function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCabinetOpen, setIsCabinetOpen] = useState(false);
 
-  // Auto-restore Cabinet Open State on Page Refresh if User is Logged In (Requirement 2)
+  // Auto-restore Cabinet Open State ONLY IF user had the Cabinet Modal open before page refresh
   useEffect(() => {
     if (currentUser) {
       const savedCabinetState = localStorage.getItem('nova_study_cabinet_open');
-      if (savedCabinetState === 'true' || savedCabinetState === null) {
+      if (savedCabinetState === 'true') {
         setIsCabinetOpen(true);
+      } else {
+        setIsCabinetOpen(false);
       }
     } else {
       setIsCabinetOpen(false);
