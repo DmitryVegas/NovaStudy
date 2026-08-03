@@ -27,10 +27,14 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
   const [bulkFeePaid, setBulkFeePaid] = useState(false);
   const [filterStage, setFilterStage] = useState('all'); // Quick Stage Filter for staff/admin
 
+  // User Accounts Search & Role Filter
+  const [userAccountSearch, setUserAccountSearch] = useState('');
+  const [userAccountRoleFilter, setUserAccountRoleFilter] = useState('all'); // 'all', 'student', 'staff'
+
   // Priority Delete Confirmation Modal State
   const [deleteConfirm, setDeleteConfirm] = useState({
     isOpen: false,
-    type: 'doc', // 'doc' or 'student'
+    type: 'doc', // 'doc' or 'student' or 'user'
     title: '',
     itemName: '',
     onConfirm: null
@@ -215,7 +219,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
     alert('Профиль успешно обновлен!');
   };
 
-  // Smart Filter: Passport search + Stage filter
+  // Smart Filter: Passport search + Stage filter for Students tab
   const filteredStudents = rawStudentsList.filter((st) => {
     if (filterStage !== 'all' && st.statusStage !== Number(filterStage)) {
       return false;
@@ -223,17 +227,49 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
 
     if (!passportSearch) return true;
     const query = passportSearch.toLowerCase().trim();
+    const queryDigits = query.replace(/\D/g, '');
 
     const passportMatch = st.passport && st.passport.toLowerCase().includes(query);
     const nameMatch = st.name && st.name.toLowerCase().includes(query);
-    const usernameMatch = st.username && st.username.toLowerCase().includes(query);
+    const usernameMatch = st.username && String(st.username).toLowerCase().includes(query);
     const phoneMatch = st.phone && st.phone.includes(query);
+
+    let phoneDigitsMatch = false;
+    if (queryDigits.length >= 2 && st.phone) {
+      const stPhoneDigits = st.phone.replace(/\D/g, '');
+      phoneDigitsMatch = stPhoneDigits.includes(queryDigits);
+    }
 
     if (/^[a-zA-Z]{2}/.test(query)) {
       return passportMatch;
     }
 
-    return passportMatch || nameMatch || usernameMatch || phoneMatch;
+    return passportMatch || nameMatch || usernameMatch || phoneMatch || phoneDigitsMatch;
+  });
+
+  // Smart Filter: Name + Partial Phone Digits (2-4 combination) + Role Filter for User Management Tab
+  const filteredAccountUsers = users.filter((u) => {
+    // Role Filter
+    if (userAccountRoleFilter === 'student' && u.role !== 'student') return false;
+    if (userAccountRoleFilter === 'staff' && u.role !== 'staff') return false;
+
+    if (!userAccountSearch) return true;
+    const query = userAccountSearch.toLowerCase().trim();
+    const queryDigits = query.replace(/\D/g, '');
+
+    const nameMatch = u.name && u.name.toLowerCase().includes(query);
+    const usernameMatch = u.username && String(u.username).toLowerCase().includes(query);
+    const passportMatch = u.passport && u.passport.toLowerCase().includes(query);
+    const phoneMatch = u.phone && u.phone.includes(query);
+
+    // Partial phone digit matching for 2, 3, 4 digit combinations (e.g. 77, 998, 555)
+    let phoneDigitsMatch = false;
+    if (queryDigits.length >= 2 && u.phone) {
+      const uPhoneDigits = u.phone.replace(/\D/g, '');
+      phoneDigitsMatch = uPhoneDigits.includes(queryDigits);
+    }
+
+    return nameMatch || usernameMatch || passportMatch || phoneMatch || phoneDigitsMatch;
   });
 
   // Toggle Single Selection
@@ -569,14 +605,14 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   {t.manageTitle}
                 </h3>
 
-                {/* Passport & Name Search Bar + Stage Filter Dropdown + Select All */}
+                {/* Passport, Name & Phone Search Bar + Stage Filter Dropdown + Select All */}
                 <div style={{ marginBottom: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', alignItems: 'center' }}>
-                  {/* Text Search Input */}
+                  {/* Text & Partial Phone Search Input */}
                   <div style={{ position: 'relative' }}>
                     <Search size={18} color={isLight ? '#0284c7' : '#00f0ff'} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                     <input
                       type="text"
-                      placeholder={t.searchPassportPlaceholder}
+                      placeholder="Поиск по ФИО, телефону (+998, 77, 555) или паспорту..."
                       value={passportSearch}
                       onChange={(e) => setPassportSearch(e.target.value)}
                       style={{
@@ -684,6 +720,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {filteredStudents.map((st) => {
                       const isSelected = selectedStudentIds.includes(st.id);
+                      const canDeleteStudent = currentUser.role === 'admin' || currentUser.role === 'staff';
 
                       return (
                         <div
@@ -734,7 +771,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                               </div>
                             </div>
 
-                            {currentUser.role === 'admin' && (
+                            {canDeleteStudent && (
                               <button
                                 onClick={() => promptDeleteUser(st.id, st.name || st.username)}
                                 style={{
@@ -1014,104 +1051,201 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   </button>
                 </form>
 
-                {/* MAIN ADMIN USER MANAGEMENT TABLE / LIST (All Staff & Students) */}
+                {/* ADVANCED ACCOUNTS SEARCH & FILTERING BAR FOR ADMIN AND STAFF */}
                 <div style={{ borderTop: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '32px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
                     <h4 style={{ fontSize: '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <Users size={20} color={isLight ? '#0284c7' : '#00f0ff'} />
-                      <span>Все зарегистрированные аккаунты ({users.length})</span>
+                      <span>Все зарегистрированные аккаунты ({filteredAccountUsers.length})</span>
                     </h4>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {users.map((usr) => {
-                      const isMainAdminAcc = String(usr.username).toLowerCase() === 'darkxan';
-                      const isSelf = currentUser && currentUser.id === usr.id;
+                  {/* Filter controls bar: Name/Phone search + Role toggle buttons */}
+                  <div style={{ marginBottom: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', alignItems: 'center' }}>
+                    {/* Search Input for Name, Username, Passport or 2-4 digit Phone Number */}
+                    <div style={{ position: 'relative' }}>
+                      <Search size={18} color={isLight ? '#0284c7' : '#00f0ff'} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                      <input
+                        type="text"
+                        placeholder="Поиск по ФИО, телефону (+998, 77, 555) или логину..."
+                        value={userAccountSearch}
+                        onChange={(e) => setUserAccountSearch(e.target.value)}
+                        style={{
+                          width: '100%',
+                          borderRadius: '12px',
+                          padding: '12px 16px 12px 44px',
+                          fontSize: '13px',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
 
-                      return (
-                        <div
-                          key={usr.id}
-                          style={{
-                            padding: '16px 20px',
-                            borderRadius: '16px',
-                            background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.03)',
-                            border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            flexWrap: 'wrap',
-                            gap: '12px'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                            <div style={{
-                              width: '42px',
-                              height: '42px',
-                              borderRadius: '12px',
-                              background: usr.role === 'admin' ? 'rgba(245, 158, 11, 0.15)' : usr.role === 'staff' ? 'rgba(37, 99, 235, 0.15)' : 'rgba(2, 132, 199, 0.15)',
-                              color: usr.role === 'admin' ? '#f59e0b' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
+                    {/* Role Filter Toggle Buttons (Все / Только Студенты / Только Сотрудники) */}
+                    <div style={{ display: 'flex', gap: '6px', background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.05)', padding: '4px', borderRadius: '12px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setUserAccountRoleFilter('all')}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: userAccountRoleFilter === 'all' ? (isLight ? '#0284c7' : '#00f0ff') : 'transparent',
+                          color: userAccountRoleFilter === 'all' ? '#ffffff' : (isLight ? '#64748b' : '#9ca3af'),
+                          fontWeight: 700,
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        Все ({users.length})
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setUserAccountRoleFilter('student')}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: userAccountRoleFilter === 'student' ? (isLight ? '#0284c7' : '#00f0ff') : 'transparent',
+                          color: userAccountRoleFilter === 'student' ? '#ffffff' : (isLight ? '#64748b' : '#9ca3af'),
+                          fontWeight: 700,
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        Студенты ({users.filter(u => u.role === 'student').length})
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setUserAccountRoleFilter('staff')}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: userAccountRoleFilter === 'staff' ? (isLight ? '#0284c7' : '#00f0ff') : 'transparent',
+                          color: userAccountRoleFilter === 'staff' ? '#ffffff' : (isLight ? '#64748b' : '#9ca3af'),
+                          fontWeight: 700,
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        Сотрудники ({users.filter(u => u.role === 'staff').length})
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Users List with Delete Permissions for Admin (all non-admin) and Staff (students only) */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {filteredAccountUsers.length === 0 ? (
+                      <div style={{ padding: '30px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af', fontSize: '13px' }}>
+                        Аккаунты по вашему запросу не найдены.
+                      </div>
+                    ) : (
+                      filteredAccountUsers.map((usr) => {
+                        const isMainAdminAcc = String(usr.username).toLowerCase() === 'darkxan';
+                        const isSelf = currentUser && currentUser.id === usr.id;
+
+                        // Delete permissions: Admin can delete non-main-admin users. Staff can delete STUDENTS only.
+                        const canDeleteUser =
+                          (currentUser.role === 'admin' && !isMainAdminAcc) ||
+                          (currentUser.role === 'staff' && usr.role === 'student');
+
+                        return (
+                          <div
+                            key={usr.id}
+                            style={{
+                              padding: '16px 20px',
+                              borderRadius: '16px',
+                              background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.03)',
+                              border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
                               display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'center',
-                              fontWeight: 800
-                            }}>
-                              {usr.role === 'admin' ? <Shield size={20} /> : usr.role === 'staff' ? <User size={20} /> : <GraduationCap size={20} />}
+                              justifyContent: 'space-between',
+                              flexWrap: 'wrap',
+                              gap: '12px'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                              <div style={{
+                                width: '42px',
+                                height: '42px',
+                                borderRadius: '12px',
+                                background: usr.role === 'admin' ? 'rgba(245, 158, 11, 0.15)' : usr.role === 'staff' ? 'rgba(37, 99, 235, 0.15)' : 'rgba(2, 132, 199, 0.15)',
+                                color: usr.role === 'admin' ? '#f59e0b' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: 800
+                              }}>
+                                {usr.role === 'admin' ? <Shield size={20} /> : usr.role === 'staff' ? <User size={20} /> : <GraduationCap size={20} />}
+                              </div>
+
+                              <div>
+                                <div style={{ fontSize: '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span>{usr.name || usr.username}</span>
+                                  <span style={{
+                                    fontSize: '10px',
+                                    fontWeight: 800,
+                                    textTransform: 'uppercase',
+                                    background: usr.role === 'admin' ? '#f59e0b' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
+                                    color: '#fff',
+                                    padding: '2px 8px',
+                                    borderRadius: '6px'
+                                  }}>
+                                    {usr.role === 'admin' ? 'Главный Админ' : usr.role === 'staff' ? 'Сотрудник' : 'Студент'}
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: '12px', color: isLight ? '#64748b' : '#9ca3af', marginTop: '4px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                                  <span>Логин: <strong>{usr.username}</strong></span>
+                                  <span>Пароль: <strong>{usr.password}</strong></span>
+                                  {usr.phone && <span>Тел: <strong>{usr.phone}</strong></span>}
+                                </div>
+                              </div>
                             </div>
 
+                            {/* DELETE USER BUTTON ACCORDING TO ROLE PERMISSIONS */}
                             <div>
-                              <div style={{ fontSize: '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span>{usr.name || usr.username}</span>
-                                <span style={{
-                                  fontSize: '10px',
-                                  fontWeight: 800,
-                                  textTransform: 'uppercase',
-                                  background: usr.role === 'admin' ? '#f59e0b' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
-                                  color: '#fff',
-                                  padding: '2px 8px',
-                                  borderRadius: '6px'
-                                }}>
-                                  {usr.role === 'admin' ? 'Главный Админ' : usr.role === 'staff' ? 'Сотрудник' : 'Студент'}
+                              {isMainAdminAcc ? (
+                                <span style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '6px 12px', borderRadius: '8px' }}>
+                                  🔒 Главный аккаунт
                                 </span>
-                              </div>
-                              <div style={{ fontSize: '12px', color: isLight ? '#64748b' : '#9ca3af', marginTop: '4px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-                                <span>Логин: <strong>{usr.username}</strong></span>
-                                <span>Пароль: <strong>{usr.password}</strong></span>
-                                {usr.phone && <span>Тел: {usr.phone}</span>}
-                              </div>
+                              ) : canDeleteUser ? (
+                                <button
+                                  onClick={() => promptDeleteUser(usr.id, usr.name || usr.username)}
+                                  style={{
+                                    background: 'rgba(244, 63, 94, 0.1)',
+                                    color: '#f43f5e',
+                                    border: '1px solid rgba(244, 63, 94, 0.25)',
+                                    padding: '8px 14px',
+                                    borderRadius: '10px',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    fontWeight: 700,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
+                                  }}
+                                >
+                                  <Trash2 size={14} />
+                                  <span>Удалить профиль</span>
+                                </button>
+                              ) : (
+                                <span style={{ fontSize: '11px', fontWeight: 600, color: isLight ? '#94a3b8' : '#64748b' }}>
+                                  —
+                                </span>
+                              )}
                             </div>
                           </div>
-
-                          {/* DELETE USER BUTTON FOR MAIN ADMIN */}
-                          <div>
-                            {isMainAdminAcc ? (
-                              <span style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '6px 12px', borderRadius: '8px' }}>
-                                🔒 Главный аккаунт
-                              </span>
-                            ) : currentUser.role === 'admin' ? (
-                              <button
-                                onClick={() => promptDeleteUser(usr.id, usr.name || usr.username)}
-                                style={{
-                                  background: 'rgba(244, 63, 94, 0.1)',
-                                  color: '#f43f5e',
-                                  border: '1px solid rgba(244, 63, 94, 0.25)',
-                                  padding: '8px 14px',
-                                  borderRadius: '10px',
-                                  cursor: 'pointer',
-                                  fontSize: '12px',
-                                  fontWeight: 700,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px'
-                                }}
-                              >
-                                <Trash2 size={14} />
-                                <span>Удалить профиль</span>
-                              </button>
-                            ) : null}
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               </div>
