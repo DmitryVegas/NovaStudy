@@ -26,13 +26,13 @@ const DEFAULT_ADMIN = {
   createdAt: new Date().toLocaleDateString()
 };
 
-// Ensure DB files exist
+// Ensure DB files exist and are populated with valid JSON
 function initDB() {
   try {
-    if (!fs.existsSync(USERS_FILE)) {
+    if (!fs.existsSync(USERS_FILE) || fs.readFileSync(USERS_FILE, 'utf8').trim() === '') {
       fs.writeFileSync(USERS_FILE, JSON.stringify([DEFAULT_ADMIN], null, 2));
     }
-    if (!fs.existsSync(LEADS_FILE)) {
+    if (!fs.existsSync(LEADS_FILE) || fs.readFileSync(LEADS_FILE, 'utf8').trim() === '') {
       fs.writeFileSync(LEADS_FILE, JSON.stringify([], null, 2));
     }
   } catch (err) {
@@ -41,19 +41,17 @@ function initDB() {
 }
 initDB();
 
-// Read Users (Dynamic read on every single request)
+// Read Users (Dynamic read on every single request with empty file recovery)
 app.get(['/api/users', '/users'], (req, res) => {
   try {
-    if (!fs.existsSync(USERS_FILE)) {
-      initDB();
-    }
+    initDB();
     const data = fs.readFileSync(USERS_FILE, 'utf8');
-    const users = JSON.parse(data);
+    const users = JSON.parse(data || '[]');
     console.log(`[API GET] Returning ${users.length} users to client.`);
     res.json(users);
   } catch (err) {
     console.error("[API GET ERROR]", err);
-    res.status(500).json({ error: 'Failed to read users database' });
+    res.json([DEFAULT_ADMIN]);
   }
 });
 
@@ -77,8 +75,9 @@ app.post(['/api/users', '/users'], (req, res) => {
 // Read Leads
 app.get(['/api/leads', '/leads'], (req, res) => {
   try {
+    initDB();
     const data = fs.readFileSync(LEADS_FILE, 'utf8');
-    const leads = JSON.parse(data);
+    const leads = JSON.parse(data || '[]');
     res.json(leads);
   } catch (err) {
     res.status(500).json({ error: 'Failed to read leads database' });
@@ -89,8 +88,9 @@ app.get(['/api/leads', '/leads'], (req, res) => {
 app.post(['/api/leads', '/leads'], (req, res) => {
   try {
     const newLead = req.body;
+    initDB();
     const data = fs.readFileSync(LEADS_FILE, 'utf8');
-    const leads = JSON.parse(data);
+    const leads = JSON.parse(data || '[]');
     leads.unshift(newLead);
     fs.writeFileSync(LEADS_FILE, JSON.stringify(leads, null, 2));
     res.json({ success: true });
