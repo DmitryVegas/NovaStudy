@@ -391,30 +391,30 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
               <div
                 className="cabinet-user-badge"
                 style={{
-                  padding: isMobile ? '10px 12px' : '14px',
-                  background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.04)',
-                  borderRadius: '14px',
-                  marginBottom: isMobile ? '10px' : '20px',
-                  border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
-                  boxShadow: isLight ? '0 4px 12px rgba(0, 0, 0, 0.03)' : 'none',
+                  padding: isMobile ? '12px 14px' : '14px 16px',
+                  background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.06)',
+                  borderRadius: '16px',
+                  marginBottom: isMobile ? '12px' : '20px',
+                  border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
+                  boxShadow: isLight ? '0 4px 12px rgba(0, 0, 0, 0.04)' : '0 4px 12px rgba(0, 0, 0, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  paddingRight: isMobile ? '46px' : '14px' // padding for top close button
+                  paddingRight: isMobile ? '48px' : '16px' // reserve space for close button
                 }}
               >
                 <div>
-                  <div style={{ fontSize: isMobile ? '14px' : '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff' }}>
+                  <div style={{ fontSize: isMobile ? '15px' : '16px', fontWeight: 800, color: isLight ? '#0f172a' : '#ffffff' }}>
                     {currentUser.name || currentUser.username}
                   </div>
                   <div style={{
                     display: 'inline-block',
-                    fontSize: '10px',
+                    fontSize: '11px',
                     fontWeight: 800,
                     background: currentUser.role === 'admin' ? '#d97706' : currentUser.role === 'staff' ? '#2563eb' : '#0284c7',
                     color: '#ffffff',
-                    padding: '2px 8px',
-                    borderRadius: '6px',
+                    padding: '2px 10px',
+                    borderRadius: '8px',
                     marginTop: '4px'
                   }}>
                     {currentUser.role === 'admin' ? tAuth.adminBadge : currentUser.role === 'staff' ? tAuth.staffBadge : tAuth.studentBadge}
@@ -428,35 +428,35 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       onClose();
                     }}
                     style={{
-                      background: 'rgba(244, 63, 94, 0.12)',
-                      border: '1px solid rgba(244, 63, 94, 0.3)',
-                      color: '#f43f5e',
-                      borderRadius: '8px',
-                      padding: '6px 10px',
-                      fontWeight: 700,
-                      fontSize: '11px',
+                      background: 'rgba(244, 63, 94, 0.2)',
+                      border: '1px solid rgba(244, 63, 94, 0.4)',
+                      color: '#ff6b81',
+                      borderRadius: '10px',
+                      padding: '7px 12px',
+                      fontWeight: 800,
+                      fontSize: '12px',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '5px'
                     }}
                   >
-                    <LogOut size={13} />
+                    <LogOut size={14} />
                     <span>{tAuth.logout}</span>
                   </button>
                 )}
               </div>
 
-              {/* Tabs Container - Scrollable horizontal row on Mobile */}
+              {/* Tabs Container - High-Contrast Visible Tabs */}
               <div
                 className="cabinet-tabs-list"
                 style={{
                   display: 'flex',
                   flexDirection: isMobile ? 'row' : 'column',
                   overflowX: isMobile ? 'auto' : 'visible',
-                  gap: isMobile ? '6px' : '8px',
+                  gap: isMobile ? '8px' : '8px',
                   WebkitOverflowScrolling: 'touch',
-                  paddingBottom: isMobile ? '4px' : '0'
+                  paddingBottom: isMobile ? '6px' : '0'
                 }}
               >
                 {currentUser.role === 'student' && (
@@ -464,20 +464,27 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     <button
                       onClick={() => setActiveTab('status')}
                       style={{
-                        padding: isMobile ? '8px 12px' : '12px 14px',
+                        padding: isMobile ? '10px 14px' : '12px 16px',
                         borderRadius: '12px',
-                        background: activeTab === 'status' ? (isLight ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.2)') : 'transparent',
-                        color: activeTab === 'status' ? (isLight ? '#2563eb' : '#60a5fa') : (isLight ? '#64748b' : '#9ca3af'),
-                        border: 'none',
+                        background: activeTab === 'status'
+                          ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
+                          : (isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.08)'),
+                        color: activeTab === 'status'
+                          ? '#ffffff'
+                          : (isLight ? '#0f172a' : '#ffffff'),
+                        border: activeTab === 'status'
+                          ? 'none'
+                          : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)'),
                         textAlign: 'left',
-                        fontWeight: 700,
-                        fontSize: isMobile ? '12px' : '14px',
+                        fontWeight: 800,
+                        fontSize: isMobile ? '13px' : '14px',
                         whiteSpace: isMobile ? 'nowrap' : 'normal',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        boxShadow: activeTab === 'status' ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none'
                       }}
                     >
                       <Layers size={isMobile ? 16 : 18} />
@@ -487,20 +494,27 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     <button
                       onClick={() => setActiveTab('profile')}
                       style={{
-                        padding: isMobile ? '8px 12px' : '12px 14px',
+                        padding: isMobile ? '10px 14px' : '12px 16px',
                         borderRadius: '12px',
-                        background: activeTab === 'profile' ? (isLight ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.2)') : 'transparent',
-                        color: activeTab === 'profile' ? (isLight ? '#2563eb' : '#60a5fa') : (isLight ? '#64748b' : '#9ca3af'),
-                        border: 'none',
+                        background: activeTab === 'profile'
+                          ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
+                          : (isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.08)'),
+                        color: activeTab === 'profile'
+                          ? '#ffffff'
+                          : (isLight ? '#0f172a' : '#ffffff'),
+                        border: activeTab === 'profile'
+                          ? 'none'
+                          : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)'),
                         textAlign: 'left',
-                        fontWeight: 700,
-                        fontSize: isMobile ? '12px' : '14px',
+                        fontWeight: 800,
+                        fontSize: isMobile ? '13px' : '14px',
                         whiteSpace: isMobile ? 'nowrap' : 'normal',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        boxShadow: activeTab === 'profile' ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none'
                       }}
                     >
                       <User size={isMobile ? 16 : 18} />
@@ -510,20 +524,27 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     <button
                       onClick={() => setActiveTab('docs')}
                       style={{
-                        padding: isMobile ? '8px 12px' : '12px 14px',
+                        padding: isMobile ? '10px 14px' : '12px 16px',
                         borderRadius: '12px',
-                        background: activeTab === 'docs' ? (isLight ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.2)') : 'transparent',
-                        color: activeTab === 'docs' ? (isLight ? '#2563eb' : '#60a5fa') : (isLight ? '#64748b' : '#9ca3af'),
-                        border: 'none',
+                        background: activeTab === 'docs'
+                          ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
+                          : (isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.08)'),
+                        color: activeTab === 'docs'
+                          ? '#ffffff'
+                          : (isLight ? '#0f172a' : '#ffffff'),
+                        border: activeTab === 'docs'
+                          ? 'none'
+                          : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)'),
                         textAlign: 'left',
-                        fontWeight: 700,
-                        fontSize: isMobile ? '12px' : '14px',
+                        fontWeight: 800,
+                        fontSize: isMobile ? '13px' : '14px',
                         whiteSpace: isMobile ? 'nowrap' : 'normal',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        boxShadow: activeTab === 'docs' ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none'
                       }}
                     >
                       <FileText size={isMobile ? 16 : 18} />
@@ -537,20 +558,27 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     <button
                       onClick={() => setActiveTab('manage_students')}
                       style={{
-                        padding: isMobile ? '8px 12px' : '12px 14px',
+                        padding: isMobile ? '10px 14px' : '12px 16px',
                         borderRadius: '12px',
-                        background: activeTab === 'manage_students' || activeTab === 'status' ? (isLight ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.2)') : 'transparent',
-                        color: activeTab === 'manage_students' || activeTab === 'status' ? (isLight ? '#2563eb' : '#60a5fa') : (isLight ? '#64748b' : '#9ca3af'),
-                        border: 'none',
+                        background: activeTab === 'manage_students' || activeTab === 'status'
+                          ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
+                          : (isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.08)'),
+                        color: activeTab === 'manage_students' || activeTab === 'status'
+                          ? '#ffffff'
+                          : (isLight ? '#0f172a' : '#ffffff'),
+                        border: activeTab === 'manage_students' || activeTab === 'status'
+                          ? 'none'
+                          : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)'),
                         textAlign: 'left',
-                        fontWeight: 700,
-                        fontSize: isMobile ? '12px' : '14px',
+                        fontWeight: 800,
+                        fontSize: isMobile ? '13px' : '14px',
                         whiteSpace: isMobile ? 'nowrap' : 'normal',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        boxShadow: activeTab === 'manage_students' || activeTab === 'status' ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none'
                       }}
                     >
                       <GraduationCap size={isMobile ? 16 : 18} />
@@ -560,20 +588,27 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     <button
                       onClick={() => setActiveTab('create_account')}
                       style={{
-                        padding: isMobile ? '8px 12px' : '12px 14px',
+                        padding: isMobile ? '10px 14px' : '12px 16px',
                         borderRadius: '12px',
-                        background: activeTab === 'create_account' ? (isLight ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.2)') : 'transparent',
-                        color: activeTab === 'create_account' ? (isLight ? '#2563eb' : '#60a5fa') : (isLight ? '#64748b' : '#9ca3af'),
-                        border: 'none',
+                        background: activeTab === 'create_account'
+                          ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
+                          : (isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.08)'),
+                        color: activeTab === 'create_account'
+                          ? '#ffffff'
+                          : (isLight ? '#0f172a' : '#ffffff'),
+                        border: activeTab === 'create_account'
+                          ? 'none'
+                          : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)'),
                         textAlign: 'left',
-                        fontWeight: 700,
-                        fontSize: isMobile ? '12px' : '14px',
+                        fontWeight: 800,
+                        fontSize: isMobile ? '13px' : '14px',
                         whiteSpace: isMobile ? 'nowrap' : 'normal',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        boxShadow: activeTab === 'create_account' ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none'
                       }}
                     >
                       <UserPlus size={isMobile ? 16 : 18} />
