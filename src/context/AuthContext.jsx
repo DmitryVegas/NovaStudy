@@ -34,7 +34,8 @@ export function AuthProvider({ children }) {
         cache: 'no-store',
         headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
       });
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         if (Array.isArray(data)) {
           serverUsers = data;
@@ -172,7 +173,8 @@ export function AuthProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: cleanInputUsername, password: cleanInputPassword })
       });
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         if (data.success && data.user) {
           setCurrentUser(data.user);
@@ -186,23 +188,21 @@ export function AuthProvider({ children }) {
         }
       }
 
-      // If network request succeeded but live online API rejected credentials (401, 400, or !res.ok),
-      // return failure directly so it does NOT fall through to offline localStorage fallback.
-      if (res.status === 401 || res.status === 400 || !res.ok) {
+      if (res.status === 401 || res.status === 400) {
         let errorMsg = 'Invalid credentials';
-        try {
-          const data = await res.json();
-          if (data && data.error) {
-            errorMsg = data.error;
-          }
-        } catch {}
+        if (contentType.includes('application/json')) {
+          try {
+            const data = await res.json();
+            if (data && data.error) errorMsg = data.error;
+          } catch {}
+        }
         return { success: false, error: errorMsg };
       }
     } catch (err) {
       console.warn("Backend login API unreachable, falling back to live fetch / cache:", err);
     }
 
-    // Fallback to fresh server/local fetch ONLY if fetch threw a network error (e.g. server offline)
+    // Fallback to fresh server/local fetch ONLY if fetch threw a network error
     let freshUsers = await loadUsersFromAPI();
     if (!freshUsers || freshUsers.length === 0) {
       freshUsers = users;
@@ -247,7 +247,8 @@ export function AuthProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(user)
       });
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         if (data.success && Array.isArray(data.users)) {
           setUsers(data.users);
@@ -447,4 +448,3 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
-
