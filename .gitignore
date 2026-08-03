@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Database & SSH keys
+server_db_*.json
+ssh-key-*.key
+

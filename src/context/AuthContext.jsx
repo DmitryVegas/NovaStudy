@@ -12,6 +12,15 @@ const DEFAULT_ADMIN = {
   createdAt: new Date().toLocaleDateString()
 };
 
+// Safe helper for localStorage.setItem with quota error handling
+const safeSetLocalStorage = (key, value) => {
+  try {
+    localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+  } catch (err) {
+    console.warn(`[LocalStorage Quota Warning] Could not save '${key}':`, err);
+  }
+};
+
 export function AuthProvider({ children }) {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -31,7 +40,7 @@ export function AuthProvider({ children }) {
           serverUsers = data;
         }
       }
-    } catch (err) {
+    } catch {
       console.warn("Backend API sync offline, fallback to localStorage cache.");
     }
 
@@ -44,7 +53,7 @@ export function AuthProvider({ children }) {
         if (Array.isArray(parsed) && parsed.length > 0) {
           localUsers = parsed;
         }
-      } catch (e) {}
+      } catch {}
     }
 
     // Merge Server DB + Local DB by unique username
@@ -69,17 +78,30 @@ export function AuthProvider({ children }) {
     }
 
     setUsers(mergedUsers);
-    localStorage.setItem('nova_study_users_v2', JSON.stringify(mergedUsers));
+    safeSetLocalStorage('nova_study_users_v2', mergedUsers);
 
-    // Force sync back to Oracle VPS Server DB if local has extra users!
-    if (mergedUsers.length > 1) {
+    // Sync current user session state if logged in
+    const savedSessionStr = localStorage.getItem('nova_study_current_user');
+    if (savedSessionStr) {
+      try {
+        const currentSaved = JSON.parse(savedSessionStr);
+        const freshSelf = mergedUsers.find((u) => u.id === currentSaved.id || String(u.username).trim().toLowerCase() === String(currentSaved.username).trim().toLowerCase());
+        if (freshSelf) {
+          setCurrentUser(freshSelf);
+          safeSetLocalStorage('nova_study_current_user', freshSelf);
+        }
+      } catch {}
+    }
+
+    // Force sync back to Backend API if local has extra users or server was updated
+    if (serverUsers && mergedUsers.length > serverUsers.length) {
       try {
         await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(mergedUsers)
         });
-      } catch (e) {}
+      } catch {}
     }
 
     return mergedUsers;
@@ -92,15 +114,31 @@ export function AuthProvider({ children }) {
     if (savedSession) {
       try {
         setCurrentUser(JSON.parse(savedSession));
-      } catch (e) {
+      } catch {
         setCurrentUser(null);
       }
     }
+
+    // Polling interval (5 seconds) for real-time auth and DB sync across tabs/devices
+    const intervalId = setInterval(() => {
+      loadUsersFromAPI();
+    }, 5000);
+
+    // Re-sync on window focus
+    const handleFocus = () => {
+      loadUsersFromAPI();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const saveUsers = async (updatedUsers) => {
     setUsers(updatedUsers);
-    localStorage.setItem('nova_study_users_v2', JSON.stringify(updatedUsers));
+    safeSetLocalStorage('nova_study_users_v2', updatedUsers);
 
     try {
       const res = await fetch('/api/users', {
@@ -123,15 +161,52 @@ export function AuthProvider({ children }) {
     return fresh;
   };
 
-  // Real-Time Async Login (Always fetches fresh DB from Oracle VPS Server without cache)
+  // Real-Time Async Login (Queries live server API without caching delays when online)
   const login = async (username, password, rememberMe = true) => {
+    const cleanInputUsername = String(username).trim().toLowerCase();
+    const cleanInputPassword = String(password).trim();
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: cleanInputUsername, password: cleanInputPassword })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          setCurrentUser(data.user);
+          if (rememberMe) {
+            safeSetLocalStorage('nova_study_current_user', data.user);
+          } else {
+            localStorage.removeItem('nova_study_current_user');
+          }
+          await loadUsersFromAPI();
+          return { success: true, user: data.user };
+        }
+      }
+
+      // If network request succeeded but live online API rejected credentials (401, 400, or !res.ok),
+      // return failure directly so it does NOT fall through to offline localStorage fallback.
+      if (res.status === 401 || res.status === 400 || !res.ok) {
+        let errorMsg = 'Invalid credentials';
+        try {
+          const data = await res.json();
+          if (data && data.error) {
+            errorMsg = data.error;
+          }
+        } catch {}
+        return { success: false, error: errorMsg };
+      }
+    } catch (err) {
+      console.warn("Backend login API unreachable, falling back to live fetch / cache:", err);
+    }
+
+    // Fallback to fresh server/local fetch ONLY if fetch threw a network error (e.g. server offline)
     let freshUsers = await loadUsersFromAPI();
     if (!freshUsers || freshUsers.length === 0) {
       freshUsers = users;
     }
-
-    const cleanInputUsername = String(username).trim().toLowerCase();
-    const cleanInputPassword = String(password).trim();
 
     const found = freshUsers.find(
       (u) =>
@@ -142,7 +217,7 @@ export function AuthProvider({ children }) {
     if (found) {
       setCurrentUser(found);
       if (rememberMe) {
-        localStorage.setItem('nova_study_current_user', JSON.stringify(found));
+        safeSetLocalStorage('nova_study_current_user', found);
       } else {
         localStorage.removeItem('nova_study_current_user');
       }
@@ -165,6 +240,25 @@ export function AuthProvider({ children }) {
       createdAt: new Date().toLocaleDateString(),
       ...newUserObj
     };
+
+    try {
+      const res = await fetch('/api/users/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.users)) {
+          setUsers(data.users);
+          safeSetLocalStorage('nova_study_users_v2', data.users);
+          return user;
+        }
+      }
+    } catch (err) {
+      console.warn("API user create endpoint failed, fallback to saveUsers:", err);
+    }
+
     const updated = [user, ...users];
     await saveUsers(updated);
     return user;
@@ -189,7 +283,7 @@ export function AuthProvider({ children }) {
       const updatedSelf = updated.find((u) => u.id === userId);
       setCurrentUser(updatedSelf);
       if (localStorage.getItem('nova_study_current_user')) {
-        localStorage.setItem('nova_study_current_user', JSON.stringify(updatedSelf));
+        safeSetLocalStorage('nova_study_current_user', updatedSelf);
       }
     }
   };
@@ -212,6 +306,9 @@ export function AuthProvider({ children }) {
     if (currentUser && userIdsArray.includes(currentUser.id)) {
       const updatedSelf = updated.find((u) => u.id === currentUser.id);
       setCurrentUser(updatedSelf);
+      if (localStorage.getItem('nova_study_current_user')) {
+        safeSetLocalStorage('nova_study_current_user', updatedSelf);
+      }
     }
   };
 
@@ -241,6 +338,9 @@ export function AuthProvider({ children }) {
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updated.find((u) => u.id === userId);
       setCurrentUser(updatedSelf);
+      if (localStorage.getItem('nova_study_current_user')) {
+        safeSetLocalStorage('nova_study_current_user', updatedSelf);
+      }
     }
   };
 
@@ -260,6 +360,9 @@ export function AuthProvider({ children }) {
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updated.find((u) => u.id === userId);
       setCurrentUser(updatedSelf);
+      if (localStorage.getItem('nova_study_current_user')) {
+        safeSetLocalStorage('nova_study_current_user', updatedSelf);
+      }
     }
   };
 
@@ -288,6 +391,9 @@ export function AuthProvider({ children }) {
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updated.find((u) => u.id === userId);
       setCurrentUser(updatedSelf);
+      if (localStorage.getItem('nova_study_current_user')) {
+        safeSetLocalStorage('nova_study_current_user', updatedSelf);
+      }
     }
   };
 
@@ -304,6 +410,9 @@ export function AuthProvider({ children }) {
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updated.find((u) => u.id === userId);
       setCurrentUser(updatedSelf);
+      if (localStorage.getItem('nova_study_current_user')) {
+        safeSetLocalStorage('nova_study_current_user', updatedSelf);
+      }
     }
   };
 
@@ -311,6 +420,9 @@ export function AuthProvider({ children }) {
   const deleteUser = async (userId) => {
     const updated = users.filter((u) => u.id !== userId);
     await saveUsers(updated);
+    if (currentUser && currentUser.id === userId) {
+      logout();
+    }
   };
 
   return (
@@ -335,3 +447,4 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+
