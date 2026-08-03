@@ -323,7 +323,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
             width: '100%',
             height: '85vh',
             display: 'flex',
-            position: 'relative', // Ensure close X button stays strictly inside this modal panel container!
+            position: 'relative',
             borderRadius: '24px',
             background: isLight ? '#ffffff' : '#0f172a',
             border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
@@ -332,7 +332,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
             color: isLight ? '#0f172a' : '#fff'
           }}
         >
-          {/* Close X Button - Positioned Strictly Inside Modal Window Top-Right */}
+          {/* Close X Button */}
           <button
             onClick={onClose}
             title="Закрыть окно"
@@ -737,248 +737,261 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   </motion.div>
                 )}
 
-                {/* Filtered Students List */}
-                {filteredStudents.length === 0 ? (
-                  <div style={{ padding: '40px', background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.02)', borderRadius: '16px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af' }}>
-                    {t.noStudents}
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    {filteredStudents.map((st) => {
-                      const isSelected = selectedStudentIds.includes(st.id);
-                      const canDeleteStudent = currentUser.role === 'admin' || currentUser.role === 'staff';
+                {/* Filtered Students List with Smooth Fluid Animation */}
+                <motion.div layout style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <AnimatePresence mode="popLayout">
+                    {filteredStudents.length === 0 ? (
+                      <motion.div
+                        key="no-students-empty"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        style={{ padding: '40px', background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.02)', borderRadius: '16px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af' }}
+                      >
+                        {t.noStudents}
+                      </motion.div>
+                    ) : (
+                      filteredStudents.map((st) => {
+                        const isSelected = selectedStudentIds.includes(st.id);
+                        const canDeleteStudent = currentUser.role === 'admin' || currentUser.role === 'staff';
 
-                      return (
-                        <div
-                          key={st.id}
-                          style={{
-                            padding: '24px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '16px',
-                            borderRadius: '20px',
-                            border: isSelected
-                              ? (isLight ? '2px solid #2563eb' : '1px solid #3b82f6')
-                              : (isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)'),
-                            background: isSelected
-                              ? (isLight ? 'rgba(37, 99, 235, 0.05)' : 'rgba(37, 99, 235, 0.06)')
-                              : (isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.02)'),
-                            boxShadow: isLight ? '0 10px 25px rgba(0, 0, 0, 0.04)' : 'none'
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                              <button
-                                onClick={() => toggleStudentSelect(st.id)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#3b82f6', marginTop: '2px' }}
-                              >
-                                {isSelected ? <CheckSquare size={20} /> : <Square size={20} color="#94a3b8" />}
-                              </button>
+                        return (
+                          <motion.div
+                            key={st.id}
+                            layout
+                            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.96, y: -12 }}
+                            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                            style={{
+                              padding: '24px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '16px',
+                              borderRadius: '20px',
+                              border: isSelected
+                                ? (isLight ? '2px solid #2563eb' : '1px solid #3b82f6')
+                                : (isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)'),
+                              background: isSelected
+                                ? (isLight ? 'rgba(37, 99, 235, 0.05)' : 'rgba(37, 99, 235, 0.06)')
+                                : (isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.02)'),
+                              boxShadow: isLight ? '0 10px 25px rgba(0, 0, 0, 0.04)' : 'none'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                                <button
+                                  onClick={() => toggleStudentSelect(st.id)}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#3b82f6', marginTop: '2px' }}
+                                >
+                                  {isSelected ? <CheckSquare size={20} /> : <Square size={20} color="#94a3b8" />}
+                                </button>
 
-                              <div>
-                                <div style={{ fontSize: '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                  <span>{st.name || st.username}</span>
-                                  <span style={{
-                                    fontSize: '11px',
-                                    fontWeight: 700,
-                                    background: 'rgba(37, 99, 235, 0.15)',
-                                    color: isLight ? '#2563eb' : '#60a5fa',
-                                    padding: '3px 10px',
-                                    borderRadius: '8px'
-                                  }}>
-                                    {tAuth.usernameLabel}: {st.username}
-                                  </span>
-                                </div>
-                                <div style={{ fontSize: '13px', color: isLight ? '#475569' : '#cbd5e1', marginTop: '6px', display: 'flex', gap: '16px', flexWrap: 'wrap', fontWeight: 500 }}>
-                                  <span>🏛️ {t.uniLabel}: <strong>{st.university}</strong></span>
-                                  {st.passport && <span style={{ color: isLight ? '#b45309' : '#fbbf24', fontWeight: 700 }}>Passport: {st.passport}</span>}
-                                  <span>📞 {t.phoneLabel}: <strong>{st.phone || 'Не указан'}</strong></span>
+                                <div>
+                                  <div style={{ fontSize: '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <span>{st.name || st.username}</span>
+                                    <span style={{
+                                      fontSize: '11px',
+                                      fontWeight: 700,
+                                      background: 'rgba(37, 99, 235, 0.15)',
+                                      color: isLight ? '#2563eb' : '#60a5fa',
+                                      padding: '3px 10px',
+                                      borderRadius: '8px'
+                                    }}>
+                                      {tAuth.usernameLabel}: {st.username}
+                                    </span>
+                                  </div>
+                                  <div style={{ fontSize: '13px', color: isLight ? '#475569' : '#cbd5e1', marginTop: '6px', display: 'flex', gap: '16px', flexWrap: 'wrap', fontWeight: 500 }}>
+                                    <span>🏛️ {t.uniLabel}: <strong>{st.university}</strong></span>
+                                    {st.passport && <span style={{ color: isLight ? '#b45309' : '#fbbf24', fontWeight: 700 }}>Passport: {st.passport}</span>}
+                                    <span>📞 {t.phoneLabel}: <strong>{st.phone || 'Не указан'}</strong></span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
 
-                            {canDeleteStudent && (
-                              <button
-                                onClick={() => promptDeleteUser(st.id, st.name || st.username)}
-                                style={{
-                                  background: 'rgba(244, 63, 94, 0.1)',
-                                  color: '#f43f5e',
-                                  border: '1px solid rgba(244, 63, 94, 0.25)',
-                                  padding: '6px 14px',
-                                  borderRadius: '8px',
-                                  cursor: 'pointer',
-                                  fontSize: '12px',
-                                  fontWeight: 600,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px'
-                                }}
-                              >
-                                <Trash2 size={14} />
-                                <span>{t.deleteBtn}</span>
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Individual Status Change & Serious Corporate Upload Button */}
-                          <div style={{
-                            background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.02)',
-                            border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)',
-                            padding: '16px',
-                            borderRadius: '14px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '14px'
-                          }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', alignItems: 'center' }}>
-                              <div>
-                                <label style={{ fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t.changeStageLabel}</label>
-                                <CustomSelect
-                                  options={stageOptions}
-                                  value={st.statusStage || 0}
-                                  onChange={(val) => updateUserStatus(st.id, Number(val), st.statusNote, st.feePaid)}
-                                />
-                              </div>
-
-                              {/* SERIOUS & EXECUTIVE FILE UPLOAD BUTTON */}
-                              <div>
-                                <label style={{ fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t.attachDocLabel}</label>
-                                <label
+                              {canDeleteStudent && (
+                                <button
+                                  onClick={() => promptDeleteUser(st.id, st.name || st.username)}
                                   style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    padding: '10px 16px',
-                                    borderRadius: '10px',
-                                    background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.06)',
-                                    border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
-                                    color: isLight ? '#0f172a' : '#f3f4f6',
-                                    fontWeight: 600,
-                                    fontSize: '13px',
+                                    background: 'rgba(244, 63, 94, 0.1)',
+                                    color: '#f43f5e',
+                                    border: '1px solid rgba(244, 63, 94, 0.25)',
+                                    padding: '6px 14px',
+                                    borderRadius: '8px',
                                     cursor: 'pointer',
-                                    transition: 'all 0.2s ease'
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
                                   }}
                                 >
-                                  <Upload size={15} color="#3b82f6" />
-                                  <span>Загрузить PDF / Файл</span>
-                                  <input
-                                    type="file"
-                                    accept=".pdf,.png,.jpg,.jpeg"
-                                    onChange={(e) => handleFileUpload(e, st.id)}
-                                    style={{ display: 'none' }}
+                                  <Trash2 size={14} />
+                                  <span>{t.deleteBtn}</span>
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Individual Status Change & Serious Corporate Upload Button */}
+                            <div style={{
+                              background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.02)',
+                              border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)',
+                              padding: '16px',
+                              borderRadius: '14px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '14px'
+                            }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', alignItems: 'center' }}>
+                                <div>
+                                  <label style={{ fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t.changeStageLabel}</label>
+                                  <CustomSelect
+                                    options={stageOptions}
+                                    value={st.statusStage || 0}
+                                    onChange={(val) => updateUserStatus(st.id, Number(val), st.statusNote, st.feePaid)}
                                   />
+                                </div>
+
+                                {/* SERIOUS & EXECUTIVE FILE UPLOAD BUTTON */}
+                                <div>
+                                  <label style={{ fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t.attachDocLabel}</label>
+                                  <label
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '8px',
+                                      padding: '10px 16px',
+                                      borderRadius: '10px',
+                                      background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.06)',
+                                      border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
+                                      color: isLight ? '#0f172a' : '#f3f4f6',
+                                      fontWeight: 600,
+                                      fontSize: '13px',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s ease'
+                                    }}
+                                  >
+                                    <Upload size={15} color="#3b82f6" />
+                                    <span>Загрузить PDF / Файл</span>
+                                    <input
+                                      type="file"
+                                      accept=".pdf,.png,.jpg,.jpeg"
+                                      onChange={(e) => handleFileUpload(e, st.id)}
+                                      style={{ display: 'none' }}
+                                    />
+                                  </label>
+                                </div>
+                              </div>
+
+                              {/* Checkbox for Application Fee (Step 5) Confirmation */}
+                              <div style={{ borderTop: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '10px' }}>
+                                <label style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '10px',
+                                  cursor: 'pointer',
+                                  color: st.feePaid ? (isLight ? '#059669' : '#10b981') : (isLight ? '#d97706' : '#fbbf24'),
+                                  fontSize: '13px',
+                                  fontWeight: 700
+                                }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={st.feePaid || false}
+                                    onChange={(e) => updateUserStatus(st.id, st.statusStage || 0, st.statusNote, e.target.checked)}
+                                    style={{ accentColor: '#10b981', width: '18px', height: '18px', cursor: 'pointer' }}
+                                  />
+                                  <span>{t.feePaidLabel} ({st.feePaid ? 'Подтверждено ✓' : 'Ожидается'})</span>
                                 </label>
                               </div>
                             </div>
 
-                            {/* Checkbox for Application Fee (Step 5) Confirmation */}
-                            <div style={{ borderTop: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '10px' }}>
-                              <label style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                cursor: 'pointer',
-                                color: st.feePaid ? (isLight ? '#059669' : '#10b981') : (isLight ? '#d97706' : '#fbbf24'),
-                                fontSize: '13px',
-                                fontWeight: 700
-                              }}>
-                                <input
-                                  type="checkbox"
-                                  checked={st.feePaid || false}
-                                  onChange={(e) => updateUserStatus(st.id, st.statusStage || 0, st.statusNote, e.target.checked)}
-                                  style={{ accentColor: '#10b981', width: '18px', height: '18px', cursor: 'pointer' }}
-                                />
-                                <span>{t.feePaidLabel} ({st.feePaid ? 'Подтверждено ✓' : 'Ожидается'})</span>
-                              </label>
-                            </div>
-                          </div>
+                            {/* Attached Files List */}
+                            {st.documents && st.documents.length > 0 && (
+                              <div>
+                                <div style={{ fontSize: '13px', fontWeight: 800, color: isLight ? '#2563eb' : '#60a5fa', marginBottom: '8px' }}>
+                                  📁 {t.docsUploadedCount} {st.documents.length}
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  {st.documents.map((doc) => (
+                                    <div key={doc.id} style={{
+                                      background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.02)',
+                                      border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)',
+                                      borderRadius: '10px',
+                                      padding: '10px 14px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      flexWrap: 'wrap',
+                                      gap: '8px'
+                                    }}>
+                                      <div style={{ fontSize: '13px', color: isLight ? '#0f172a' : '#fff', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <FileText size={16} color="#3b82f6" />
+                                        <span>{doc.name}</span>
+                                      </div>
 
-                          {/* Attached Files List */}
-                          {st.documents && st.documents.length > 0 && (
-                            <div>
-                              <div style={{ fontSize: '13px', fontWeight: 800, color: isLight ? '#2563eb' : '#60a5fa', marginBottom: '8px' }}>
-                                📁 {t.docsUploadedCount} {st.documents.length}
-                              </div>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {st.documents.map((doc) => (
-                                  <div key={doc.id} style={{
-                                    background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.02)',
-                                    border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)',
-                                    borderRadius: '10px',
-                                    padding: '10px 14px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    flexWrap: 'wrap',
-                                    gap: '8px'
-                                  }}>
-                                    <div style={{ fontSize: '13px', color: isLight ? '#0f172a' : '#fff', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                      <FileText size={16} color="#3b82f6" />
-                                      <span>{doc.name}</span>
-                                    </div>
+                                      <div style={{ display: 'flex', gap: '6px' }}>
+                                        <a
+                                          href={doc.dataUrl}
+                                          download={doc.name}
+                                          style={{
+                                            background: 'rgba(37, 99, 235, 0.15)',
+                                            color: isLight ? '#2563eb' : '#60a5fa',
+                                            padding: '4px 10px',
+                                            borderRadius: '6px',
+                                            fontSize: '11px',
+                                            fontWeight: 700,
+                                            textDecoration: 'none'
+                                          }}
+                                        >
+                                          Скачать
+                                        </a>
 
-                                    <div style={{ display: 'flex', gap: '6px' }}>
-                                      <a
-                                        href={doc.dataUrl}
-                                        download={doc.name}
-                                        style={{
-                                          background: 'rgba(37, 99, 235, 0.15)',
-                                          color: isLight ? '#2563eb' : '#60a5fa',
-                                          padding: '4px 10px',
-                                          borderRadius: '6px',
-                                          fontSize: '11px',
-                                          fontWeight: 700,
-                                          textDecoration: 'none'
-                                        }}
-                                      >
-                                        Скачать
-                                      </a>
-
-                                      <label style={{
-                                        background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.08)',
-                                        color: isLight ? '#0f172a' : '#fff',
-                                        border: isLight ? '1px solid #cbd5e1' : 'none',
-                                        padding: '4px 10px',
-                                        borderRadius: '6px',
-                                        fontSize: '11px',
-                                        fontWeight: 700,
-                                        cursor: 'pointer'
-                                      }}>
-                                        Заменить
-                                        <input
-                                          type="file"
-                                          accept=".pdf,.png,.jpg,.jpeg"
-                                          style={{ display: 'none' }}
-                                          onChange={(e) => handleFileReplace(e, st.id, doc.id)}
-                                        />
-                                      </label>
-
-                                      <button
-                                        onClick={() => promptDeleteDocument(st.id, doc.id, doc.name)}
-                                        style={{
-                                          background: 'rgba(244, 63, 94, 0.12)',
-                                          color: '#e11d48',
-                                          border: 'none',
+                                        <label style={{
+                                          background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.08)',
+                                          color: isLight ? '#0f172a' : '#fff',
+                                          border: isLight ? '1px solid #cbd5e1' : 'none',
                                           padding: '4px 10px',
                                           borderRadius: '6px',
                                           fontSize: '11px',
                                           fontWeight: 700,
                                           cursor: 'pointer'
-                                        }}
-                                      >
-                                        Удалить
-                                      </button>
+                                        }}>
+                                          Заменить
+                                          <input
+                                            type="file"
+                                            accept=".pdf,.png,.jpg,.jpeg"
+                                            style={{ display: 'none' }}
+                                            onChange={(e) => handleFileReplace(e, st.id, doc.id)}
+                                          />
+                                        </label>
+
+                                        <button
+                                          onClick={() => promptDeleteDocument(st.id, doc.id, doc.name)}
+                                          style={{
+                                            background: 'rgba(244, 63, 94, 0.12)',
+                                            color: '#e11d48',
+                                            border: 'none',
+                                            padding: '4px 10px',
+                                            borderRadius: '6px',
+                                            fontSize: '11px',
+                                            fontWeight: 700,
+                                            cursor: 'pointer'
+                                          }}
+                                        >
+                                          Удалить
+                                        </button>
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                            )}
+                          </motion.div>
+                        );
+                      })
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               </div>
             )}
 
@@ -1165,176 +1178,183 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       />
                     </div>
 
-                    {/* Role Filter Toggle Buttons (Все / Только Студенты / Только Сотрудники) - LUXURIOUS EXECUTIVE STYLING */}
-                    <div style={{ display: 'flex', gap: '6px', background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.04)', padding: '5px', borderRadius: '12px', border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <button
-                        type="button"
-                        onClick={() => setUserAccountRoleFilter('all')}
-                        style={{
-                          flex: 1,
-                          padding: '9px 12px',
-                          borderRadius: '8px',
-                          border: 'none',
-                          background: userAccountRoleFilter === 'all' ? (isLight ? '#2563eb' : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)') : 'transparent',
-                          color: userAccountRoleFilter === 'all' ? '#ffffff' : (isLight ? '#64748b' : '#94a3b8'),
-                          fontWeight: 700,
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          boxShadow: userAccountRoleFilter === 'all' ? '0 4px 12px rgba(37, 99, 235, 0.3)' : 'none',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        Все ({users.length})
-                      </button>
+                    {/* Role Filter Toggle Buttons with FLUID SLIDING BACKGROUND ANIMATION (layoutId) */}
+                    <div style={{
+                      display: 'flex',
+                      gap: '4px',
+                      background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.04)',
+                      padding: '4px',
+                      borderRadius: '14px',
+                      border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.08)',
+                      position: 'relative'
+                    }}>
+                      {[
+                        { id: 'all', label: `Все (${users.length})` },
+                        { id: 'student', label: `Студенты (${users.filter(u => u.role === 'student').length})` },
+                        { id: 'staff', label: `Сотрудники (${users.filter(u => u.role === 'staff').length})` }
+                      ].map((tab) => {
+                        const isActive = userAccountRoleFilter === tab.id;
 
-                      <button
-                        type="button"
-                        onClick={() => setUserAccountRoleFilter('student')}
-                        style={{
-                          flex: 1,
-                          padding: '9px 12px',
-                          borderRadius: '8px',
-                          border: 'none',
-                          background: userAccountRoleFilter === 'student' ? (isLight ? '#2563eb' : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)') : 'transparent',
-                          color: userAccountRoleFilter === 'student' ? '#ffffff' : (isLight ? '#64748b' : '#94a3b8'),
-                          fontWeight: 700,
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          boxShadow: userAccountRoleFilter === 'student' ? '0 4px 12px rgba(37, 99, 235, 0.3)' : 'none',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        Студенты ({users.filter(u => u.role === 'student').length})
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setUserAccountRoleFilter('staff')}
-                        style={{
-                          flex: 1,
-                          padding: '9px 12px',
-                          borderRadius: '8px',
-                          border: 'none',
-                          background: userAccountRoleFilter === 'staff' ? (isLight ? '#2563eb' : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)') : 'transparent',
-                          color: userAccountRoleFilter === 'staff' ? '#ffffff' : (isLight ? '#64748b' : '#94a3b8'),
-                          fontWeight: 700,
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          boxShadow: userAccountRoleFilter === 'staff' ? '0 4px 12px rgba(37, 99, 235, 0.3)' : 'none',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        Сотрудники ({users.filter(u => u.role === 'staff').length})
-                      </button>
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => setUserAccountRoleFilter(tab.id)}
+                            style={{
+                              flex: 1,
+                              padding: '9px 12px',
+                              borderRadius: '10px',
+                              border: 'none',
+                              background: 'transparent',
+                              color: isActive ? '#ffffff' : (isLight ? '#64748b' : '#94a3b8'),
+                              fontWeight: 700,
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              position: 'relative',
+                              zIndex: 1,
+                              transition: 'color 0.2s ease'
+                            }}
+                          >
+                            {isActive && (
+                              <motion.div
+                                layoutId="activeRoleTabPill"
+                                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                                style={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  borderRadius: '10px',
+                                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
+                                  zIndex: -1
+                                }}
+                              />
+                            )}
+                            <span>{tab.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* Users List with Delete Permissions for Admin (all non-admin) and Staff (students only) */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {filteredAccountUsers.length === 0 ? (
-                      <div style={{ padding: '30px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af', fontSize: '13px' }}>
-                        Аккаунты по вашему запросу не найдены.
-                      </div>
-                    ) : (
-                      filteredAccountUsers.map((usr) => {
-                        const isMainAdminAcc = String(usr.username).toLowerCase() === 'darkxan';
-                        const isSelf = currentUser && currentUser.id === usr.id;
+                  {/* Users List with Smooth Layout & Exit Animations */}
+                  <motion.div layout style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <AnimatePresence mode="popLayout">
+                      {filteredAccountUsers.length === 0 ? (
+                        <motion.div
+                          key="empty-account-search"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          style={{ padding: '30px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af', fontSize: '13px' }}
+                        >
+                          Аккаунты по вашему запросу не найдены.
+                        </motion.div>
+                      ) : (
+                        filteredAccountUsers.map((usr) => {
+                          const isMainAdminAcc = String(usr.username).toLowerCase() === 'darkxan';
+                          const isSelf = currentUser && currentUser.id === usr.id;
 
-                        // Delete permissions: Admin can delete non-main-admin users. Staff can delete STUDENTS only.
-                        const canDeleteUser =
-                          (currentUser.role === 'admin' && !isMainAdminAcc) ||
-                          (currentUser.role === 'staff' && usr.role === 'student');
+                          // Delete permissions: Admin can delete non-main-admin users. Staff can delete STUDENTS only.
+                          const canDeleteUser =
+                            (currentUser.role === 'admin' && !isMainAdminAcc) ||
+                            (currentUser.role === 'staff' && usr.role === 'student');
 
-                        return (
-                          <div
-                            key={usr.id}
-                            style={{
-                              padding: '16px 20px',
-                              borderRadius: '16px',
-                              background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.03)',
-                              border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              flexWrap: 'wrap',
-                              gap: '12px'
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                              <div style={{
-                                width: '42px',
-                                height: '42px',
-                                borderRadius: '12px',
-                                background: usr.role === 'admin' ? 'rgba(217, 119, 6, 0.15)' : usr.role === 'staff' ? 'rgba(37, 99, 235, 0.15)' : 'rgba(2, 132, 199, 0.15)',
-                                color: usr.role === 'admin' ? '#d97706' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
+                          return (
+                            <motion.div
+                              key={usr.id}
+                              layout
+                              initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.96, y: -12 }}
+                              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                              style={{
+                                padding: '16px 20px',
+                                borderRadius: '16px',
+                                background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.03)',
+                                border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: 800
-                              }}>
-                                {usr.role === 'admin' ? <Shield size={20} /> : usr.role === 'staff' ? <User size={20} /> : <GraduationCap size={20} />}
+                                justifyContent: 'space-between',
+                                flexWrap: 'wrap',
+                                gap: '12px'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                <div style={{
+                                  width: '42px',
+                                  height: '42px',
+                                  borderRadius: '12px',
+                                  background: usr.role === 'admin' ? 'rgba(217, 119, 6, 0.15)' : usr.role === 'staff' ? 'rgba(37, 99, 235, 0.15)' : 'rgba(2, 132, 199, 0.15)',
+                                  color: usr.role === 'admin' ? '#d97706' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: 800
+                                }}>
+                                  {usr.role === 'admin' ? <Shield size={20} /> : usr.role === 'staff' ? <User size={20} /> : <GraduationCap size={20} />}
+                                </div>
+
+                                <div>
+                                  <div style={{ fontSize: '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span>{usr.name || usr.username}</span>
+                                    <span style={{
+                                      fontSize: '10px',
+                                      fontWeight: 800,
+                                      textTransform: 'uppercase',
+                                      background: usr.role === 'admin' ? '#d97706' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
+                                      color: '#fff',
+                                      padding: '2px 8px',
+                                      borderRadius: '6px'
+                                    }}>
+                                      {usr.role === 'admin' ? 'Главный Админ' : usr.role === 'staff' ? 'Сотрудник' : 'Студент'}
+                                    </span>
+                                  </div>
+                                  <div style={{ fontSize: '12px', color: isLight ? '#64748b' : '#9ca3af', marginTop: '4px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                                    <span>Логин: <strong>{usr.username}</strong></span>
+                                    <span>Пароль: <strong>{usr.password}</strong></span>
+                                    {usr.phone && <span>Тел: <strong>{usr.phone}</strong></span>}
+                                  </div>
+                                </div>
                               </div>
 
+                              {/* DELETE USER BUTTON ACCORDING TO ROLE PERMISSIONS */}
                               <div>
-                                <div style={{ fontSize: '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <span>{usr.name || usr.username}</span>
-                                  <span style={{
-                                    fontSize: '10px',
-                                    fontWeight: 800,
-                                    textTransform: 'uppercase',
-                                    background: usr.role === 'admin' ? '#d97706' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
-                                    color: '#fff',
-                                    padding: '2px 8px',
-                                    borderRadius: '6px'
-                                  }}>
-                                    {usr.role === 'admin' ? 'Главный Админ' : usr.role === 'staff' ? 'Сотрудник' : 'Студент'}
+                                {isMainAdminAcc ? (
+                                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#d97706', background: 'rgba(217, 119, 6, 0.12)', padding: '6px 12px', borderRadius: '8px' }}>
+                                    🔒 Главный аккаунт
                                   </span>
-                                </div>
-                                <div style={{ fontSize: '12px', color: isLight ? '#64748b' : '#9ca3af', marginTop: '4px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-                                  <span>Логин: <strong>{usr.username}</strong></span>
-                                  <span>Пароль: <strong>{usr.password}</strong></span>
-                                  {usr.phone && <span>Тел: <strong>{usr.phone}</strong></span>}
-                                </div>
+                                ) : canDeleteUser ? (
+                                  <button
+                                    onClick={() => promptDeleteUser(usr.id, usr.name || usr.username)}
+                                    style={{
+                                      background: 'rgba(244, 63, 94, 0.1)',
+                                      color: '#f43f5e',
+                                      border: '1px solid rgba(244, 63, 94, 0.25)',
+                                      padding: '8px 14px',
+                                      borderRadius: '10px',
+                                      cursor: 'pointer',
+                                      fontSize: '12px',
+                                      fontWeight: 700,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '6px'
+                                    }}
+                                  >
+                                    <Trash2 size={14} />
+                                    <span>Удалить профиль</span>
+                                  </button>
+                                ) : (
+                                  <span style={{ fontSize: '11px', fontWeight: 600, color: isLight ? '#94a3b8' : '#64748b' }}>
+                                    —
+                                  </span>
+                                )}
                               </div>
-                            </div>
-
-                            {/* DELETE USER BUTTON ACCORDING TO ROLE PERMISSIONS */}
-                            <div>
-                              {isMainAdminAcc ? (
-                                <span style={{ fontSize: '11px', fontWeight: 700, color: '#d97706', background: 'rgba(217, 119, 6, 0.12)', padding: '6px 12px', borderRadius: '8px' }}>
-                                  🔒 Главный аккаунт
-                                </span>
-                              ) : canDeleteUser ? (
-                                <button
-                                  onClick={() => promptDeleteUser(usr.id, usr.name || usr.username)}
-                                  style={{
-                                    background: 'rgba(244, 63, 94, 0.1)',
-                                    color: '#f43f5e',
-                                    border: '1px solid rgba(244, 63, 94, 0.25)',
-                                    padding: '8px 14px',
-                                    borderRadius: '10px',
-                                    cursor: 'pointer',
-                                    fontSize: '12px',
-                                    fontWeight: 700,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px'
-                                  }}
-                                >
-                                  <Trash2 size={14} />
-                                  <span>Удалить профиль</span>
-                                </button>
-                              ) : (
-                                <span style={{ fontSize: '11px', fontWeight: 600, color: isLight ? '#94a3b8' : '#64748b' }}>
-                                  —
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
+                            </motion.div>
+                          );
+                        })
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 </div>
               </div>
             )}
@@ -1348,7 +1368,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
               style={{
                 position: 'fixed',
                 inset: 0,
-                zIndex: 5000, // Highest priority z-index above CabinetModal
+                zIndex: 5000,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
