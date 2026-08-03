@@ -1,0 +1,295 @@
+import React, { useState, useEffect, useContext } from 'react';
+import { Globe, Phone, Menu, X, Sparkles, GraduationCap, User, LogIn, Sun, Moon } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
+import { ThemeContext } from '../context/ThemeContext';
+import { translations } from '../data/translations';
+
+export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpenLogin, onOpenCabinet }) {
+  const { currentUser } = useContext(AuthContext);
+  const { theme, isAuto, toggleTheme } = useContext(ThemeContext);
+
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const t = translations[currentLang]?.nav || translations.ru.nav;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 30) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const isLight = theme === 'light';
+
+  return (
+    <header
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        background: isScrolled
+          ? (isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(7, 10, 18, 0.95)')
+          : (isLight ? 'rgba(248, 250, 252, 0.85)' : 'rgba(7, 10, 18, 0.7)'),
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        borderBottom: isScrolled
+          ? (isLight ? '1px solid rgba(226, 232, 240, 0.9)' : '1px solid rgba(0, 240, 255, 0.15)')
+          : (isLight ? '1px solid rgba(226, 232, 240, 0.5)' : '1px solid rgba(255, 255, 255, 0.05)'),
+        padding: isScrolled ? '12px 0' : '18px 0'
+      }}
+    >
+      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px' }}>
+        {/* Left Side: Logo + Nav Links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '28px', flexShrink: 0 }}>
+          {/* Logo */}
+          <a href="#" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, #00f0ff 0%, #2563eb 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 0 20px rgba(0, 240, 255, 0.4)',
+                flexShrink: 0
+              }}
+            >
+              <GraduationCap size={24} color="#070a12" strokeWidth={2.5} />
+            </div>
+            <div>
+              <div style={{ fontSize: '22px', fontWeight: '800', color: isLight ? '#0f172a' : '#fff', letterSpacing: '0.5px', lineHeight: 1.1 }}>
+                NOVA<span style={{ color: isLight ? '#0284c7' : '#00f0ff' }}>STUDY</span>
+              </div>
+              <div style={{ fontSize: '10px', color: isLight ? '#64748b' : '#9ca3af', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 700 }}>
+                South Korea Edu
+              </div>
+            </div>
+          </a>
+
+          {/* Desktop Nav Links */}
+          <nav style={{ display: 'none', gap: '22px', alignItems: 'center' }} className="desktop-nav">
+            <a href="#programs" className="nav-link-item">{t.programs}</a>
+            <a href="#universities" className="nav-link-item">{t.universities}</a>
+            <a href="#calculator" className="nav-link-item">{t.calculator}</a>
+            <a href="#roadmap" className="nav-link-item">{t.roadmap}</a>
+            <a href="#faq" className="nav-link-item">{t.faq}</a>
+          </nav>
+        </div>
+
+        {/* Right Side Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, marginLeft: 'auto' }}>
+          {/* Theme Toggle Button (Icon only with mandatory left margin) */}
+          <button
+            onClick={toggleTheme}
+            style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '50%',
+              background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(255, 255, 255, 0.08)',
+              border: isLight ? '1px solid rgba(2, 132, 199, 0.3)' : '1px solid rgba(255, 255, 255, 0.15)',
+              color: isLight ? '#0284c7' : '#00f0ff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.25s ease',
+              boxShadow: isLight ? '0 2px 8px rgba(2, 132, 199, 0.15)' : 'none',
+              marginLeft: '12px'
+            }}
+            title={isAuto ? "Автоматическая смена по времени суток (GMT+5/GMT+9)" : "Ручной режим (сбросится через 6 часов)"}
+          >
+            {isLight ? <Sun size={20} color="#f59e0b" /> : <Moon size={20} color="#00f0ff" />}
+          </button>
+
+          {/* Language Switcher */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              background: isLight ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.05)',
+              padding: '4px 6px',
+              borderRadius: '24px',
+              border: isLight ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.1)',
+              flexShrink: 0
+            }}
+          >
+            <Globe size={14} color={isLight ? '#0284c7' : '#00f0ff'} style={{ marginLeft: '4px', marginRight: '4px' }} />
+            {['ru', 'uz', 'en'].map((lang) => (
+              <button
+                key={lang}
+                onClick={() => setLang(lang)}
+                style={{
+                  background: currentLang === lang
+                    ? (isLight ? 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)' : 'linear-gradient(135deg, #00f0ff 0%, #2563eb 100%)')
+                    : 'transparent',
+                  color: currentLang === lang ? (isLight ? '#ffffff' : '#070a12') : (isLight ? '#64748b' : '#9ca3af'),
+                  border: 'none',
+                  padding: '4px 10px',
+                  borderRadius: '14px',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {lang}
+              </button>
+            ))}
+          </div>
+
+          {/* Personal Account / Login Button */}
+          {currentUser ? (
+            <button
+              onClick={onOpenCabinet}
+              style={{
+                background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(0, 240, 255, 0.12)',
+                border: isLight ? '1px solid rgba(2, 132, 199, 0.4)' : '1px solid rgba(0, 240, 255, 0.4)',
+                color: isLight ? '#0284c7' : '#00f0ff',
+                padding: '8px 16px',
+                borderRadius: '9999px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <User size={15} />
+              <span>{currentUser.username}</span>
+            </button>
+          ) : (
+            <button
+              onClick={onOpenLogin}
+              style={{
+                background: isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.08)',
+                border: isLight ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.15)',
+                color: isLight ? '#0f172a' : '#fff',
+                padding: '8px 16px',
+                borderRadius: '9999px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <LogIn size={15} color={isLight ? '#0284c7' : '#00f0ff'} />
+              <span>{t.cabinet || 'Кабинет'}</span>
+            </button>
+          )}
+
+          {/* Premium Consultation Button */}
+          <button
+            onClick={onOpenConsultation}
+            className="desktop-btn nav-cta-btn"
+          >
+            <Sparkles size={15} color="#ffffff" />
+            <span style={{ whiteSpace: 'nowrap' }}>{t.consultation}</span>
+          </button>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              background: isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: isLight ? '#0f172a' : '#fff',
+              padding: '8px',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              display: 'flex'
+            }}
+            className="mobile-toggle"
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div
+          style={{
+            background: isLight ? '#ffffff' : '#0e1424',
+            borderBottom: isLight ? '1px solid rgba(226, 232, 240, 0.9)' : '1px solid rgba(0, 240, 255, 0.2)',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}
+        >
+          <a href="#programs" onClick={() => setMobileMenuOpen(false)} style={{ color: isLight ? '#0f172a' : '#fff', textDecoration: 'none', fontSize: '15px', fontWeight: 600 }}>
+            {t.programs}
+          </a>
+          <a href="#universities" onClick={() => setMobileMenuOpen(false)} style={{ color: isLight ? '#0f172a' : '#fff', textDecoration: 'none', fontSize: '15px', fontWeight: 600 }}>
+            {t.universities}
+          </a>
+          <a href="#calculator" onClick={() => setMobileMenuOpen(false)} style={{ color: isLight ? '#0f172a' : '#fff', textDecoration: 'none', fontSize: '15px', fontWeight: 600 }}>
+            {t.calculator}
+          </a>
+          <a href="#roadmap" onClick={() => setMobileMenuOpen(false)} style={{ color: isLight ? '#0f172a' : '#fff', textDecoration: 'none', fontSize: '15px', fontWeight: 600 }}>
+            {t.roadmap}
+          </a>
+          <a href="#faq" onClick={() => setMobileMenuOpen(false)} style={{ color: isLight ? '#0f172a' : '#fff', textDecoration: 'none', fontSize: '15px', fontWeight: 600 }}>
+            {t.faq}
+          </a>
+
+          <button
+            onClick={toggleTheme}
+            style={{ padding: '12px', background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(255, 255, 255, 0.08)', color: isLight ? '#0284c7' : '#00f0ff', border: 'none', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+          >
+            {isLight ? <Sun size={18} /> : <Moon size={18} />}
+            <span>{isLight ? 'Переключить на Темную тему' : 'Переключить на Светлую тему'}</span>
+          </button>
+
+          {currentUser ? (
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenCabinet();
+              }}
+              style={{ padding: '12px', background: 'rgba(0, 240, 255, 0.2)', color: '#00f0ff', border: 'none', borderRadius: '12px', fontWeight: 700 }}
+            >
+              {currentUser.username} (Кабинет)
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenLogin();
+              }}
+              style={{ padding: '12px', background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255, 255, 255, 0.08)', color: isLight ? '#0f172a' : '#fff', border: 'none', borderRadius: '12px', fontWeight: 700 }}
+            >
+              Вход в Кабинет
+            </button>
+          )}
+
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              onOpenConsultation();
+            }}
+            className="nav-cta-btn"
+            style={{ width: '100%', justifyContent: 'center', marginTop: '6px' }}
+          >
+            <Sparkles size={16} color="#ffffff" />
+            <span>{t.consultation}</span>
+          </button>
+        </div>
+      )}
+    </header>
+  );
+}
