@@ -625,7 +625,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     <Search size={18} color={isLight ? '#3b82f6' : '#60a5fa'} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                     <input
                       type="text"
-                      placeholder="Поиск по ФИО, телефону (+998, 77, 555) или паспорту..."
+                      placeholder={t.searchPassportPlaceholder || "Поиск по Номеру Паспорта, Имени или Телефону..."}
                       value={passportSearch}
                       onChange={(e) => setPassportSearch(e.target.value)}
                       style={{
@@ -1151,7 +1151,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
                     <h4 style={{ fontSize: '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <Users size={20} color="#3b82f6" />
-                      <span>Все зарегистрированные аккаунты ({filteredAccountUsers.length})</span>
+                      <span>{t.allAccountsTitle || 'Все зарегистрированные аккаунты'} ({filteredAccountUsers.length})</span>
                     </h4>
                   </div>
 
@@ -1162,7 +1162,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       <Search size={18} color="#3b82f6" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                       <input
                         type="text"
-                        placeholder="Поиск по ФИО, телефону (+998, 77, 555) или логину..."
+                        placeholder={t.searchUserPlaceholder || "Поиск по ФИО, телефону (+998, 77, 555) или логину..."}
                         value={userAccountSearch}
                         onChange={(e) => setUserAccountSearch(e.target.value)}
                         style={{
@@ -1189,9 +1189,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       position: 'relative'
                     }}>
                       {[
-                        { id: 'all', label: `Все (${users.length})` },
-                        { id: 'student', label: `Студенты (${users.filter(u => u.role === 'student').length})` },
-                        { id: 'staff', label: `Сотрудники (${users.filter(u => u.role === 'staff').length})` }
+                        { id: 'all', label: `${t.tabFilterAll || 'Все'} (${users.length})` },
+                        { id: 'student', label: `${t.tabFilterStudents || 'Студенты'} (${users.filter(u => u.role === 'student').length})` },
+                        { id: 'staff', label: `${t.tabFilterStaff || 'Сотрудники'} (${users.filter(u => u.role === 'staff').length})` }
                       ].map((tab) => {
                         const isActive = userAccountRoleFilter === tab.id;
 
@@ -1247,7 +1247,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                           exit={{ opacity: 0, y: -10 }}
                           style={{ padding: '30px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af', fontSize: '13px' }}
                         >
-                          Аккаунты по вашему запросу не найдены.
+                          {t.noUsersFound || "Аккаунты по вашему запросу не найдены."}
                         </motion.div>
                       ) : (
                         filteredAccountUsers.map((usr) => {
@@ -1305,13 +1305,13 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                                       padding: '2px 8px',
                                       borderRadius: '6px'
                                     }}>
-                                      {usr.role === 'admin' ? 'Главный Админ' : usr.role === 'staff' ? 'Сотрудник' : 'Студент'}
+                                      {usr.role === 'admin' ? tAuth.adminBadge : usr.role === 'staff' ? tAuth.staffBadge : tAuth.studentBadge}
                                     </span>
                                   </div>
                                   <div style={{ fontSize: '12px', color: isLight ? '#64748b' : '#9ca3af', marginTop: '4px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-                                    <span>Логин: <strong>{usr.username}</strong></span>
-                                    <span>Пароль: <strong>{usr.password}</strong></span>
-                                    {usr.phone && <span>Тел: <strong>{usr.phone}</strong></span>}
+                                    <span>{tAuth.usernameLabel}: <strong>{usr.username}</strong></span>
+                                    <span>{tAuth.passwordLabel}: <strong>{usr.password}</strong></span>
+                                    {usr.phone && <span>{t.phoneShort || 'Tel'}: <strong>{usr.phone}</strong></span>}
                                   </div>
                                 </div>
                               </div>
@@ -1320,7 +1320,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                               <div>
                                 {isMainAdminAcc ? (
                                   <span style={{ fontSize: '11px', fontWeight: 700, color: '#d97706', background: 'rgba(217, 119, 6, 0.12)', padding: '6px 12px', borderRadius: '8px' }}>
-                                    🔒 Главный аккаунт
+                                    {t.mainAccountBadge || '🔒 Asosiy hisob'}
                                   </span>
                                 ) : canDeleteUser ? (
                                   <button
@@ -1340,7 +1340,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                                     }}
                                   >
                                     <Trash2 size={14} />
-                                    <span>Удалить профиль</span>
+                                    <span>{t.deleteProfileBtn || 'Profilni o\'chirish'}</span>
                                   </button>
                                 ) : (
                                   <span style={{ fontSize: '11px', fontWeight: 600, color: isLight ? '#94a3b8' : '#64748b' }}>
