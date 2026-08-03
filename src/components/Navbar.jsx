@@ -41,43 +41,43 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
         borderBottom: isScrolled
-          ? (isLight ? '1px solid rgba(226, 232, 240, 0.9)' : '1px solid rgba(0, 240, 255, 0.15)')
+          ? (isLight ? '1px solid rgba(226, 232, 240, 0.9)' : '1px solid rgba(37, 99, 235, 0.2)')
           : (isLight ? '1px solid rgba(226, 232, 240, 0.5)' : '1px solid rgba(255, 255, 255, 0.05)'),
-        padding: isScrolled ? '12px 0' : '18px 0'
+        padding: isScrolled ? '10px 0' : '14px 0'
       }}
     >
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px' }}>
+      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
         {/* Left Side: Logo + Nav Links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '28px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
           {/* Logo */}
-          <a href="#" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+          <a href="#" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
             <div
               style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '14px',
-                background: 'linear-gradient(135deg, #00f0ff 0%, #2563eb 100%)',
+                width: '38px',
+                height: '38px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 20px rgba(0, 240, 255, 0.4)',
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
                 flexShrink: 0
               }}
             >
-              <GraduationCap size={24} color="#070a12" strokeWidth={2.5} />
+              <GraduationCap size={22} color="#ffffff" strokeWidth={2.5} />
             </div>
             <div>
-              <div style={{ fontSize: '22px', fontWeight: '800', color: isLight ? '#0f172a' : '#fff', letterSpacing: '0.5px', lineHeight: 1.1 }}>
-                NOVA<span style={{ color: isLight ? '#0284c7' : '#00f0ff' }}>STUDY</span>
+              <div style={{ fontSize: '20px', fontWeight: '800', color: isLight ? '#0f172a' : '#fff', letterSpacing: '0.5px', lineHeight: 1.1 }}>
+                NOVA<span style={{ color: isLight ? '#2563eb' : '#60a5fa' }}>STUDY</span>
               </div>
-              <div style={{ fontSize: '10px', color: isLight ? '#64748b' : '#9ca3af', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 700 }}>
+              <div style={{ fontSize: '9px', color: isLight ? '#64748b' : '#9ca3af', textTransform: 'uppercase', letterSpacing: '1.2px', fontWeight: 700 }}>
                 South Korea Edu
               </div>
             </div>
           </a>
 
           {/* Desktop Nav Links */}
-          <nav style={{ display: 'none', gap: '22px', alignItems: 'center' }} className="desktop-nav">
+          <nav style={{ display: 'none', gap: '20px', alignItems: 'center' }} className="desktop-nav">
             <a href="#programs" className="nav-link-item">{t.programs}</a>
             <a href="#universities" className="nav-link-item">{t.universities}</a>
             <a href="#calculator" className="nav-link-item">{t.calculator}</a>
@@ -86,29 +86,28 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
           </nav>
         </div>
 
-        {/* Right Side Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, marginLeft: 'auto' }}>
-          {/* Theme Toggle Button (Icon only with mandatory left margin) */}
+        {/* Right Side Controls - Clean, Elegant & Mobile Responsive */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: 'auto' }}>
+          {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}
             style={{
-              width: '38px',
-              height: '38px',
+              width: '36px',
+              height: '36px',
               borderRadius: '50%',
               background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(255, 255, 255, 0.08)',
               border: isLight ? '1px solid rgba(2, 132, 199, 0.3)' : '1px solid rgba(255, 255, 255, 0.15)',
-              color: isLight ? '#0284c7' : '#00f0ff',
+              color: isLight ? '#0284c7' : '#60a5fa',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'all 0.25s ease',
-              boxShadow: isLight ? '0 2px 8px rgba(2, 132, 199, 0.15)' : 'none',
-              marginLeft: '12px'
+              transition: 'all 0.2s ease',
+              flexShrink: 0
             }}
-            title={isAuto ? "Автоматическая смена по времени суток (GMT+5/GMT+9)" : "Ручной режим (сбросится через 6 часов)"}
+            title={isAuto ? "Автоматическая смена по времени суток" : "Ручной режим"}
           >
-            {isLight ? <Sun size={20} color="#f59e0b" /> : <Moon size={20} color="#00f0ff" />}
+            {isLight ? <Sun size={18} color="#f59e0b" /> : <Moon size={18} color="#60a5fa" />}
           </button>
 
           {/* Language Switcher */}
@@ -117,26 +116,26 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
               display: 'flex',
               alignItems: 'center',
               background: isLight ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.05)',
-              padding: '4px 6px',
-              borderRadius: '24px',
+              padding: '3px 4px',
+              borderRadius: '20px',
               border: isLight ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.1)',
               flexShrink: 0
             }}
           >
-            <Globe size={14} color={isLight ? '#0284c7' : '#00f0ff'} style={{ marginLeft: '4px', marginRight: '4px' }} />
+            <Globe size={13} color={isLight ? '#2563eb' : '#60a5fa'} style={{ marginLeft: '4px', marginRight: '3px' }} />
             {['ru', 'uz', 'en'].map((lang) => (
               <button
                 key={lang}
                 onClick={() => setLang(lang)}
                 style={{
                   background: currentLang === lang
-                    ? (isLight ? 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)' : 'linear-gradient(135deg, #00f0ff 0%, #2563eb 100%)')
+                    ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
                     : 'transparent',
-                  color: currentLang === lang ? (isLight ? '#ffffff' : '#070a12') : (isLight ? '#64748b' : '#9ca3af'),
+                  color: currentLang === lang ? '#ffffff' : (isLight ? '#64748b' : '#9ca3af'),
                   border: 'none',
-                  padding: '4px 10px',
-                  borderRadius: '14px',
-                  fontSize: '11px',
+                  padding: '3px 7px',
+                  borderRadius: '12px',
+                  fontSize: '10px',
                   fontWeight: 800,
                   cursor: 'pointer',
                   textTransform: 'uppercase',
@@ -148,57 +147,63 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
             ))}
           </div>
 
-          {/* Personal Account / Login Button */}
+          {/* User Account / Login Icon Button — ALWAYS VISIBLE ON MOBILE & DESKTOP */}
           {currentUser ? (
             <button
               onClick={onOpenCabinet}
-              className="desktop-btn"
+              title={currentUser.name || currentUser.username}
               style={{
-                background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(37, 99, 235, 0.15)',
-                border: isLight ? '1px solid rgba(2, 132, 199, 0.4)' : '1px solid rgba(37, 99, 235, 0.4)',
-                color: isLight ? '#0284c7' : '#60a5fa',
-                padding: '8px 16px',
-                borderRadius: '9999px',
-                fontSize: '13px',
-                fontWeight: 700,
+                height: '36px',
+                padding: '0 12px',
+                borderRadius: '18px',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                color: '#ffffff',
+                border: 'none',
                 cursor: 'pointer',
-                display: 'inline-flex',
+                display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: 700,
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                flexShrink: 0
               }}
             >
               <User size={15} />
-              <span>{currentUser.username}</span>
+              <span style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {currentUser.username}
+              </span>
             </button>
           ) : (
             <button
               onClick={onOpenLogin}
-              className="desktop-btn"
+              title={t.cabinet || 'Войти в кабинет'}
               style={{
-                background: isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.08)',
-                border: isLight ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.15)',
-                color: isLight ? '#0f172a' : '#fff',
-                padding: '8px 16px',
-                borderRadius: '9999px',
-                fontSize: '13px',
-                fontWeight: 700,
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: isLight ? 'rgba(37, 99, 235, 0.1)' : 'rgba(37, 99, 235, 0.2)',
+                border: isLight ? '1px solid rgba(37, 99, 235, 0.3)' : '1px solid rgba(37, 99, 235, 0.5)',
+                color: isLight ? '#2563eb' : '#60a5fa',
                 cursor: 'pointer',
-                display: 'inline-flex',
+                display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
+                transition: 'all 0.2s ease',
+                flexShrink: 0
               }}
             >
-              <LogIn size={15} color={isLight ? '#0284c7' : '#60a5fa'} />
-              <span>{t.cabinet || 'Кабинет'}</span>
+              <User size={18} />
             </button>
           )}
 
-          {/* Premium Consultation Button */}
+          {/* Premium Consultation Button (Desktop Only) */}
           <button
             onClick={onOpenConsultation}
             className="desktop-btn nav-cta-btn"
           >
-            <Sparkles size={15} color="#ffffff" />
+            <Sparkles size={14} color="#ffffff" />
             <span style={{ whiteSpace: 'nowrap' }}>{t.consultation}</span>
           </button>
 
@@ -207,16 +212,20 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
               background: isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
               color: isLight ? '#0f172a' : '#fff',
-              padding: '8px',
+              width: '36px',
+              height: '36px',
               borderRadius: '10px',
               cursor: 'pointer',
-              display: 'flex'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
             }}
             className="mobile-toggle"
           >
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
@@ -226,11 +235,11 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
         <div
           style={{
             background: isLight ? '#ffffff' : '#0e1424',
-            borderBottom: isLight ? '1px solid rgba(226, 232, 240, 0.9)' : '1px solid rgba(0, 240, 255, 0.2)',
-            padding: '20px',
+            borderBottom: isLight ? '1px solid rgba(226, 232, 240, 0.9)' : '1px solid rgba(37, 99, 235, 0.2)',
+            padding: '18px 20px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px'
+            gap: '14px'
           }}
         >
           <a href="#programs" onClick={() => setMobileMenuOpen(false)} style={{ color: isLight ? '#0f172a' : '#fff', textDecoration: 'none', fontSize: '15px', fontWeight: 600 }}>
@@ -249,23 +258,27 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
             {t.faq}
           </a>
 
-          <button
-            onClick={toggleTheme}
-            style={{ padding: '12px', background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(255, 255, 255, 0.08)', color: isLight ? '#0284c7' : '#00f0ff', border: 'none', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-          >
-            {isLight ? <Sun size={18} /> : <Moon size={18} />}
-            <span>{isLight ? 'Переключить на Темную тему' : 'Переключить на Светлую тему'}</span>
-          </button>
-
           {currentUser ? (
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenCabinet();
               }}
-              style={{ padding: '12px', background: 'rgba(0, 240, 255, 0.2)', color: '#00f0ff', border: 'none', borderRadius: '12px', fontWeight: 700 }}
+              style={{
+                padding: '12px',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
             >
-              {currentUser.username} (Кабинет)
+              <User size={16} />
+              <span>{currentUser.username} ({t.cabinet || 'Кабинет'})</span>
             </button>
           ) : (
             <button
@@ -273,9 +286,21 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
                 setMobileMenuOpen(false);
                 onOpenLogin();
               }}
-              style={{ padding: '12px', background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255, 255, 255, 0.08)', color: isLight ? '#0f172a' : '#fff', border: 'none', borderRadius: '12px', fontWeight: 700 }}
+              style={{
+                padding: '12px',
+                background: isLight ? 'rgba(37, 99, 235, 0.1)' : 'rgba(37, 99, 235, 0.2)',
+                color: isLight ? '#2563eb' : '#60a5fa',
+                border: isLight ? '1px solid rgba(37, 99, 235, 0.3)' : '1px solid rgba(37, 99, 235, 0.4)',
+                borderRadius: '12px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
             >
-              Вход в Кабинет
+              <LogIn size={16} />
+              <span>Войти в Кабинет</span>
             </button>
           )}
 
@@ -285,7 +310,7 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
               onOpenConsultation();
             }}
             className="nav-cta-btn"
-            style={{ width: '100%', justifyContent: 'center', marginTop: '6px' }}
+            style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}
           >
             <Sparkles size={16} color="#ffffff" />
             <span>{t.consultation}</span>

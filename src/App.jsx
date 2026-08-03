@@ -24,6 +24,29 @@ export default function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCabinetOpen, setIsCabinetOpen] = useState(false);
 
+  // Auto-restore Cabinet Open State on Page Refresh if User is Logged In (Requirement 2)
+  useEffect(() => {
+    if (currentUser) {
+      const savedCabinetState = localStorage.getItem('nova_study_cabinet_open');
+      if (savedCabinetState === 'true' || savedCabinetState === null) {
+        setIsCabinetOpen(true);
+      }
+    } else {
+      setIsCabinetOpen(false);
+      localStorage.removeItem('nova_study_cabinet_open');
+    }
+  }, [currentUser]);
+
+  const handleOpenCabinet = () => {
+    setIsCabinetOpen(true);
+    localStorage.setItem('nova_study_cabinet_open', 'true');
+  };
+
+  const handleCloseCabinet = () => {
+    setIsCabinetOpen(false);
+    localStorage.setItem('nova_study_cabinet_open', 'false');
+  };
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Hotkey Ctrl + Shift + A opens Admin Leads Panel
@@ -60,7 +83,7 @@ export default function App() {
         setLang={setLang}
         onOpenConsultation={() => handleOpenConsultation()}
         onOpenLogin={() => setIsLoginOpen(true)}
-        onOpenCabinet={() => setIsCabinetOpen(true)}
+        onOpenCabinet={handleOpenCabinet}
       />
 
       {/* Main Hero Banner */}
@@ -131,13 +154,15 @@ export default function App() {
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
         currentLang={currentLang}
-        onLoginSuccess={() => setIsCabinetOpen(true)}
+        onLoginSuccess={() => {
+          handleOpenCabinet();
+        }}
       />
 
       {/* Personal Cabinet Portal Modal */}
       <CabinetModal
         isOpen={isCabinetOpen}
-        onClose={() => setIsCabinetOpen(false)}
+        onClose={handleCloseCabinet}
         currentLang={currentLang}
       />
     </div>
