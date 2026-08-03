@@ -463,6 +463,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   <>
                     <button
                       onClick={() => setActiveTab('status')}
+                      className="cabinet-tab-btn"
                       style={{
                         padding: isMobile ? '10px 14px' : '12px 16px',
                         borderRadius: '12px',
@@ -493,6 +494,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
 
                     <button
                       onClick={() => setActiveTab('profile')}
+                      className="cabinet-tab-btn"
                       style={{
                         padding: isMobile ? '10px 14px' : '12px 16px',
                         borderRadius: '12px',
@@ -523,6 +525,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
 
                     <button
                       onClick={() => setActiveTab('docs')}
+                      className="cabinet-tab-btn cabinet-tab-full-width"
                       style={{
                         padding: isMobile ? '10px 14px' : '12px 16px',
                         borderRadius: '12px',
@@ -542,6 +545,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
+                        justifyContent: 'center',
                         gap: '8px',
                         flexShrink: 0,
                         boxShadow: activeTab === 'docs' ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none'
@@ -557,6 +561,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   <>
                     <button
                       onClick={() => setActiveTab('manage_students')}
+                      className="cabinet-tab-btn"
                       style={{
                         padding: isMobile ? '10px 14px' : '12px 16px',
                         borderRadius: '12px',
@@ -587,6 +592,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
 
                     <button
                       onClick={() => setActiveTab('create_account')}
+                      className="cabinet-tab-btn cabinet-tab-full-width"
                       style={{
                         padding: isMobile ? '10px 14px' : '12px 16px',
                         borderRadius: '12px',
@@ -606,6 +612,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
+                        justifyContent: 'center',
                         gap: '8px',
                         flexShrink: 0,
                         boxShadow: activeTab === 'create_account' ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none'

@@ -330,19 +330,24 @@ body.light-theme .nav-cta-btn {
   }
 
   .cabinet-tabs-list {
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    white-space: nowrap !important;
-    gap: 6px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    overflow-x: visible !important;
+    white-space: normal !important;
     padding-bottom: 4px !important;
-    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .cabinet-tab-full-width {
+    grid-column: span 2 !important;
   }
 
   .cabinet-tab-btn {
-    padding: 8px 12px !important;
-    font-size: 12px !important;
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    white-space: normal !important;
+    justify-content: center !important;
+    text-align: center !important;
   }
 
   .cabinet-main-content {
