@@ -52,17 +52,18 @@ export function AuthProvider({ children }) {
 
     if (serverUsers && localUsers) {
       const map = new Map();
-      serverUsers.forEach((u) => map.set(u.username.toLowerCase(), u));
+      serverUsers.forEach((u) => map.set(String(u.username).trim().toLowerCase(), u));
       localUsers.forEach((u) => {
-        if (!map.has(u.username.toLowerCase())) {
-          map.set(u.username.toLowerCase(), u);
+        const key = String(u.username).trim().toLowerCase();
+        if (!map.has(key)) {
+          map.set(key, u);
         }
       });
       mergedUsers = Array.from(map.values());
     }
 
     // Ensure Admin is always present
-    const hasAdmin = mergedUsers.some((u) => u.username.toLowerCase() === 'darkxan');
+    const hasAdmin = mergedUsers.some((u) => String(u.username).trim().toLowerCase() === 'darkxan');
     if (!hasAdmin) {
       mergedUsers = [DEFAULT_ADMIN, ...mergedUsers];
     }
@@ -129,8 +130,13 @@ export function AuthProvider({ children }) {
       freshUsers = users;
     }
 
+    const cleanInputUsername = String(username).trim().toLowerCase();
+    const cleanInputPassword = String(password).trim();
+
     const found = freshUsers.find(
-      (u) => u.username.trim().toLowerCase() === username.trim().toLowerCase() && u.password === password
+      (u) =>
+        String(u.username).trim().toLowerCase() === cleanInputUsername &&
+        String(u.password).trim() === cleanInputPassword
     );
 
     if (found) {

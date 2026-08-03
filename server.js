@@ -28,33 +28,48 @@ const DEFAULT_ADMIN = {
 
 // Ensure DB files exist
 function initDB() {
-  if (!fs.existsSync(USERS_FILE)) {
-    fs.writeFileSync(USERS_FILE, JSON.stringify([DEFAULT_ADMIN], null, 2));
-  }
-  if (!fs.existsSync(LEADS_FILE)) {
-    fs.writeFileSync(LEADS_FILE, JSON.stringify([], null, 2));
+  try {
+    if (!fs.existsSync(USERS_FILE)) {
+      fs.writeFileSync(USERS_FILE, JSON.stringify([DEFAULT_ADMIN], null, 2));
+    }
+    if (!fs.existsSync(LEADS_FILE)) {
+      fs.writeFileSync(LEADS_FILE, JSON.stringify([], null, 2));
+    }
+  } catch (err) {
+    console.error("Error initializing DB files:", err);
   }
 }
 initDB();
 
-// Read Users (Supports both /api/users and /users)
+// Read Users (Dynamic read on every single request)
 app.get(['/api/users', '/users'], (req, res) => {
   try {
+    if (!fs.existsSync(USERS_FILE)) {
+      initDB();
+    }
     const data = fs.readFileSync(USERS_FILE, 'utf8');
     const users = JSON.parse(data);
+    console.log(`[API GET] Returning ${users.length} users to client.`);
     res.json(users);
   } catch (err) {
+    console.error("[API GET ERROR]", err);
     res.status(500).json({ error: 'Failed to read users database' });
   }
 });
 
-// Save/Update Users (Supports both /api/users and /users)
+// Save/Update Users (Dynamic write to disk on every single request)
 app.post(['/api/users', '/users'], (req, res) => {
   try {
     const users = req.body;
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-    res.json({ success: true });
+    if (Array.isArray(users) && users.length > 0) {
+      fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+      console.log(`[API POST SUCCESS] Saved ${users.length} users to disk.`);
+      res.json({ success: true, count: users.length });
+    } else {
+      res.status(400).json({ error: 'Invalid users array' });
+    }
   } catch (err) {
+    console.error("[API POST ERROR]", err);
     res.status(500).json({ error: 'Failed to save users database' });
   }
 });
