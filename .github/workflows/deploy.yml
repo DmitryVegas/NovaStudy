@@ -19,4 +19,5 @@ jobs:
             git pull origin main
             npm install
             npm run build
+            npx pm2 restart novastudy-backend || npx pm2 start server.js --name novastudy-backend
             sudo systemctl reload nginx

@@ -16,8 +16,23 @@ export function AuthProvider({ children }) {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Initialize Users Database
-  useEffect(() => {
+  // Load Users Database from Backend API / LocalStorage
+  const loadUsersFromAPI = async () => {
+    try {
+      const res = await fetch('/api/users');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setUsers(data);
+          localStorage.setItem('nova_study_users_v2', JSON.stringify(data));
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Backend API sync offline, fallback to localStorage cache.");
+    }
+
+    // LocalStorage Fallback
     const storedUsers = localStorage.getItem('nova_study_users_v2');
     if (storedUsers) {
       try {
@@ -26,18 +41,19 @@ export function AuthProvider({ children }) {
         if (!hasAdmin) {
           const updated = [DEFAULT_ADMIN, ...parsed];
           setUsers(updated);
-          localStorage.setItem('nova_study_users_v2', JSON.stringify(updated));
         } else {
           setUsers(parsed);
         }
       } catch (e) {
         setUsers([DEFAULT_ADMIN]);
-        localStorage.setItem('nova_study_users_v2', JSON.stringify([DEFAULT_ADMIN]));
       }
     } else {
       setUsers([DEFAULT_ADMIN]);
-      localStorage.setItem('nova_study_users_v2', JSON.stringify([DEFAULT_ADMIN]));
     }
+  };
+
+  useEffect(() => {
+    loadUsersFromAPI();
 
     const savedSession = localStorage.getItem('nova_study_current_user');
     if (savedSession) {
@@ -49,9 +65,19 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const saveUsers = (updatedUsers) => {
+  const saveUsers = async (updatedUsers) => {
     setUsers(updatedUsers);
     localStorage.setItem('nova_study_users_v2', JSON.stringify(updatedUsers));
+
+    try {
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedUsers)
+      });
+    } catch (err) {
+      console.error("Error saving users to backend API:", err);
+    }
   };
 
   const login = (username, password, rememberMe = true) => {
