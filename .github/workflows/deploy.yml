@@ -16,8 +16,11 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd ~/NovaStudy
+            sudo chown -R ubuntu:ubuntu ~/NovaStudy
+            sudo chmod -R 755 ~/NovaStudy
             git pull origin main
             npm install
             npm run build
             npx pm2 restart novastudy-backend || npx pm2 start server.js --name novastudy-backend
+            npx pm2 save
             sudo systemctl reload nginx
