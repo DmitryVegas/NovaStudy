@@ -94,7 +94,7 @@ export function AuthProvider({ children }) {
       } catch {}
     }
 
-    // Force sync back to Backend API if local has extra users or server was updated
+    // Force auto-sync back to Backend API whenever local merged has more users than server DB
     if (serverUsers && mergedUsers.length > serverUsers.length) {
       try {
         await fetch('/api/users', {
@@ -120,10 +120,10 @@ export function AuthProvider({ children }) {
       }
     }
 
-    // Polling interval (5 seconds) for real-time auth and DB sync across tabs/devices
+    // Polling interval (3 seconds) for real-time automatic background DB sync across devices
     const intervalId = setInterval(() => {
       loadUsersFromAPI();
-    }, 5000);
+    }, 3000);
 
     // Re-sync on window focus
     const handleFocus = () => {
@@ -148,7 +148,7 @@ export function AuthProvider({ children }) {
         body: JSON.stringify(updatedUsers)
       });
       if (res.ok) {
-        console.log("✅ Users successfully saved to Oracle Cloud VPS DB");
+        console.log("✅ Users automatically saved to Oracle Cloud VPS DB");
       }
     } catch (err) {
       console.error("Error saving users to backend API:", err);
@@ -231,6 +231,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('nova_study_current_user');
   };
 
+  // Instant Automatic Real-Time User Creation with Zero-Delay Server Push
   const createUser = async (newUserObj) => {
     const user = {
       id: 'user_' + Date.now(),
@@ -240,6 +241,10 @@ export function AuthProvider({ children }) {
       createdAt: new Date().toLocaleDateString(),
       ...newUserObj
     };
+
+    const updated = [user, ...users];
+    setUsers(updated);
+    safeSetLocalStorage('nova_study_users_v2', updated);
 
     try {
       const res = await fetch('/api/users/create', {
@@ -260,7 +265,6 @@ export function AuthProvider({ children }) {
       console.warn("API user create endpoint failed, fallback to saveUsers:", err);
     }
 
-    const updated = [user, ...users];
     await saveUsers(updated);
     return user;
   };
