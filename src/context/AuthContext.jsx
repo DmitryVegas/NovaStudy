@@ -16,8 +16,10 @@ export function AuthProvider({ children }) {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Load Users Database from Backend API / LocalStorage (Bypassing browser HTTP cache)
+  // Load Users Database from Backend API / LocalStorage with Smart Auto-Merge
   const loadUsersFromAPI = async () => {
+    let serverUsers = null;
+
     try {
       const res = await fetch(`/api/users?t=${Date.now()}`, {
         cache: 'no-store',
@@ -25,38 +27,61 @@ export function AuthProvider({ children }) {
       });
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setUsers(data);
-          localStorage.setItem('nova_study_users_v2', JSON.stringify(data));
-          return data;
+        if (Array.isArray(data)) {
+          serverUsers = data;
         }
       }
     } catch (err) {
       console.warn("Backend API sync offline, fallback to localStorage cache.");
     }
 
-    // LocalStorage Fallback
     const storedUsers = localStorage.getItem('nova_study_users_v2');
+    let localUsers = [DEFAULT_ADMIN];
+
     if (storedUsers) {
       try {
         const parsed = JSON.parse(storedUsers);
-        const hasAdmin = parsed.some((u) => u.username.toLowerCase() === 'darkxan');
-        if (!hasAdmin) {
-          const updated = [DEFAULT_ADMIN, ...parsed];
-          setUsers(updated);
-          return updated;
-        } else {
-          setUsers(parsed);
-          return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          localUsers = parsed;
         }
-      } catch (e) {
-        setUsers([DEFAULT_ADMIN]);
-        return [DEFAULT_ADMIN];
-      }
-    } else {
-      setUsers([DEFAULT_ADMIN]);
-      return [DEFAULT_ADMIN];
+      } catch (e) {}
     }
+
+    // Merge Server DB + Local DB by unique username
+    let mergedUsers = serverUsers || localUsers;
+
+    if (serverUsers && localUsers) {
+      const map = new Map();
+      serverUsers.forEach((u) => map.set(u.username.toLowerCase(), u));
+      localUsers.forEach((u) => {
+        if (!map.has(u.username.toLowerCase())) {
+          map.set(u.username.toLowerCase(), u);
+        }
+      });
+      mergedUsers = Array.from(map.values());
+    }
+
+    // Ensure Admin is always present
+    const hasAdmin = mergedUsers.some((u) => u.username.toLowerCase() === 'darkxan');
+    if (!hasAdmin) {
+      mergedUsers = [DEFAULT_ADMIN, ...mergedUsers];
+    }
+
+    setUsers(mergedUsers);
+    localStorage.setItem('nova_study_users_v2', JSON.stringify(mergedUsers));
+
+    // If merged dataset has more items than server, sync back to Oracle VPS DB immediately!
+    if (serverUsers && mergedUsers.length > serverUsers.length) {
+      try {
+        await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mergedUsers)
+        });
+      } catch (e) {}
+    }
+
+    return mergedUsers;
   };
 
   useEffect(() => {

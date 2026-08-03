@@ -37,8 +37,8 @@ function initDB() {
 }
 initDB();
 
-// Read Users
-app.get('/api/users', (req, res) => {
+// Read Users (Supports both /api/users and /users)
+app.get(['/api/users', '/users'], (req, res) => {
   try {
     const data = fs.readFileSync(USERS_FILE, 'utf8');
     const users = JSON.parse(data);
@@ -48,8 +48,8 @@ app.get('/api/users', (req, res) => {
   }
 });
 
-// Save/Update Users
-app.post('/api/users', (req, res) => {
+// Save/Update Users (Supports both /api/users and /users)
+app.post(['/api/users', '/users'], (req, res) => {
   try {
     const users = req.body;
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
@@ -60,7 +60,7 @@ app.post('/api/users', (req, res) => {
 });
 
 // Read Leads
-app.get('/api/leads', (req, res) => {
+app.get(['/api/leads', '/leads'], (req, res) => {
   try {
     const data = fs.readFileSync(LEADS_FILE, 'utf8');
     const leads = JSON.parse(data);
@@ -71,7 +71,7 @@ app.get('/api/leads', (req, res) => {
 });
 
 // Save Lead
-app.post('/api/leads', (req, res) => {
+app.post(['/api/leads', '/leads'], (req, res) => {
   try {
     const newLead = req.body;
     const data = fs.readFileSync(LEADS_FILE, 'utf8');
