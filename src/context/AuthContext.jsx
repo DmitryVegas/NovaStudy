@@ -16,10 +16,13 @@ export function AuthProvider({ children }) {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Load Users Database from Backend API / LocalStorage
+  // Load Users Database from Backend API / LocalStorage (Bypassing browser HTTP cache)
   const loadUsersFromAPI = async () => {
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch(`/api/users?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
+      });
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -84,7 +87,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Real-Time Async Login (Always fetches fresh DB from Oracle VPS Server)
+  // Real-Time Async Login (Always fetches fresh DB from Oracle VPS Server without cache)
   const login = async (username, password, rememberMe = true) => {
     let freshUsers = await loadUsersFromAPI();
     if (!freshUsers || freshUsers.length === 0) {
