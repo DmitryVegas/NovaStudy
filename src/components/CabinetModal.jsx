@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, User, Shield, GraduationCap, CheckCircle2, Clock, Upload, FileText, Download,
   UserPlus, LogOut, Phone, MapPin, Key, Trash2, Edit3, Sparkles, BookOpen, Layers,
-  Search, CheckSquare, Square, RefreshCw, Filter, AlertTriangle, Cloud
+  Search, CheckSquare, Square, RefreshCw, Filter, AlertTriangle, Users
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
@@ -14,8 +14,7 @@ import { translations } from '../data/translations';
 export default function CabinetModal({ isOpen, onClose, currentLang }) {
   const {
     currentUser, users, logout, createUser, updateUserStatus, updateBulkUserStatus,
-    uploadUserDoc, deleteUserDoc, replaceUserDoc, updateUserProfile, deleteUser,
-    syncUsersToServer
+    uploadUserDoc, deleteUserDoc, replaceUserDoc, updateUserProfile, deleteUser
   } = useContext(AuthContext);
 
   const { theme } = useContext(ThemeContext);
@@ -27,7 +26,6 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
   const [bulkStage, setBulkStage] = useState(0);
   const [bulkFeePaid, setBulkFeePaid] = useState(false);
   const [filterStage, setFilterStage] = useState('all'); // Quick Stage Filter for staff/admin
-  const [syncing, setSyncing] = useState(false);
 
   // Priority Delete Confirmation Modal State
   const [deleteConfirm, setDeleteConfirm] = useState({
@@ -144,16 +142,16 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
     });
   };
 
-  // Trigger Student Profile Delete Confirmation Modal
-  const promptDeleteStudent = (studentId, studentName) => {
+  // Trigger Student/Staff Profile Delete Confirmation Modal
+  const promptDeleteUser = (userId, userName) => {
     setDeleteConfirm({
       isOpen: true,
-      type: 'student',
+      type: 'user',
       title: 'Удаление профиля',
-      itemName: studentName || 'Студент',
+      itemName: userName || 'Пользователь',
       onConfirm: () => {
-        deleteUser(studentId);
-        setDeleteConfirm({ isOpen: false, type: 'student', title: '', itemName: '', onConfirm: null });
+        deleteUser(userId);
+        setDeleteConfirm({ isOpen: false, type: 'user', title: '', itemName: '', onConfirm: null });
       }
     });
   };
@@ -197,7 +195,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
     if (!newAcc.username || !newAcc.password) return;
 
     await createUser(newAcc);
-    alert(`Профиль "${newAcc.name || newAcc.username}" сохранен в Базу Данных сервера!`);
+    alert(`Профиль "${newAcc.name || newAcc.username}" успешно создан и сохранен в Базу Данных!`);
     setNewAcc({
       username: '',
       password: '',
@@ -208,19 +206,6 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
       program: 'bachelor',
       passport: ''
     });
-  };
-
-  // Manual Force Sync to Oracle Cloud VPS Server
-  const handleManualSync = async () => {
-    setSyncing(true);
-    try {
-      await syncUsersToServer();
-      alert(`✅ Все профили пользователей (${users.length}) синхронизированы с сервером Oracle Cloud VPS!`);
-    } catch (err) {
-      alert("Ошибка синхронизации с сервером");
-    } finally {
-      setSyncing(false);
-    }
   };
 
   // Handle Profile Update
@@ -374,33 +359,6 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   {currentUser.role === 'admin' ? tAuth.adminBadge : currentUser.role === 'staff' ? tAuth.staffBadge : tAuth.studentBadge}
                 </div>
               </div>
-
-              {/* Force Server Sync Button for Admin/Staff */}
-              {isSuperUser && (
-                <button
-                  onClick={handleManualSync}
-                  disabled={syncing}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    borderRadius: '12px',
-                    background: 'rgba(2, 132, 199, 0.12)',
-                    border: '1px solid rgba(2, 132, 199, 0.3)',
-                    color: isLight ? '#0284c7' : '#00f0ff',
-                    fontWeight: 700,
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    marginBottom: '20px'
-                  }}
-                >
-                  <Cloud size={16} />
-                  <span>{syncing ? 'Синхронизация...' : 'Синхронизировать с БД'}</span>
-                </button>
-              )}
 
               {/* Tabs */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -778,7 +736,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
 
                             {currentUser.role === 'admin' && (
                               <button
-                                onClick={() => promptDeleteStudent(st.id, st.name || st.username)}
+                                onClick={() => promptDeleteUser(st.id, st.name || st.username)}
                                 style={{
                                   background: 'rgba(244, 63, 94, 0.1)',
                                   color: '#f43f5e',
@@ -819,7 +777,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                                 />
                               </div>
 
-                              {/* SERIOUS & EXECUTIVE FILE UPLOAD BUTTON (Request 1) */}
+                              {/* SERIOUS & EXECUTIVE FILE UPLOAD BUTTON */}
                               <div>
                                 <label style={{ fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t.attachDocLabel}</label>
                                 <label
@@ -961,13 +919,13 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
               </div>
             )}
 
-            {/* Admin or Staff: Create Student User Account */}
+            {/* Admin or Staff: Create Student/Staff Account & Manage ALL System Accounts */}
             {isSuperUser && activeTab === 'create_account' && (
               <div>
                 <h3 style={{ fontSize: '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '20px' }}>
                   {t.createTitle}
                 </h3>
-                <form onSubmit={handleCreateUserSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '540px' }}>
+                <form onSubmit={handleCreateUserSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '540px', marginBottom: '40px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{tAuth.usernameLabel} *</label>
@@ -1055,12 +1013,113 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     <span>{t.btnCreateUser}</span>
                   </button>
                 </form>
+
+                {/* MAIN ADMIN USER MANAGEMENT TABLE / LIST (All Staff & Students) */}
+                <div style={{ borderTop: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '32px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                    <h4 style={{ fontSize: '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Users size={20} color={isLight ? '#0284c7' : '#00f0ff'} />
+                      <span>Все зарегистрированные аккаунты ({users.length})</span>
+                    </h4>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {users.map((usr) => {
+                      const isMainAdminAcc = String(usr.username).toLowerCase() === 'darkxan';
+                      const isSelf = currentUser && currentUser.id === usr.id;
+
+                      return (
+                        <div
+                          key={usr.id}
+                          style={{
+                            padding: '16px 20px',
+                            borderRadius: '16px',
+                            background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.03)',
+                            border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '12px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                            <div style={{
+                              width: '42px',
+                              height: '42px',
+                              borderRadius: '12px',
+                              background: usr.role === 'admin' ? 'rgba(245, 158, 11, 0.15)' : usr.role === 'staff' ? 'rgba(37, 99, 235, 0.15)' : 'rgba(2, 132, 199, 0.15)',
+                              color: usr.role === 'admin' ? '#f59e0b' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 800
+                            }}>
+                              {usr.role === 'admin' ? <Shield size={20} /> : usr.role === 'staff' ? <User size={20} /> : <GraduationCap size={20} />}
+                            </div>
+
+                            <div>
+                              <div style={{ fontSize: '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span>{usr.name || usr.username}</span>
+                                <span style={{
+                                  fontSize: '10px',
+                                  fontWeight: 800,
+                                  textTransform: 'uppercase',
+                                  background: usr.role === 'admin' ? '#f59e0b' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
+                                  color: '#fff',
+                                  padding: '2px 8px',
+                                  borderRadius: '6px'
+                                }}>
+                                  {usr.role === 'admin' ? 'Главный Админ' : usr.role === 'staff' ? 'Сотрудник' : 'Студент'}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: '12px', color: isLight ? '#64748b' : '#9ca3af', marginTop: '4px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                                <span>Логин: <strong>{usr.username}</strong></span>
+                                <span>Пароль: <strong>{usr.password}</strong></span>
+                                {usr.phone && <span>Тел: {usr.phone}</span>}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* DELETE USER BUTTON FOR MAIN ADMIN */}
+                          <div>
+                            {isMainAdminAcc ? (
+                              <span style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '6px 12px', borderRadius: '8px' }}>
+                                🔒 Главный аккаунт
+                              </span>
+                            ) : currentUser.role === 'admin' ? (
+                              <button
+                                onClick={() => promptDeleteUser(usr.id, usr.name || usr.username)}
+                                style={{
+                                  background: 'rgba(244, 63, 94, 0.1)',
+                                  color: '#f43f5e',
+                                  border: '1px solid rgba(244, 63, 94, 0.25)',
+                                  padding: '8px 14px',
+                                  borderRadius: '10px',
+                                  cursor: 'pointer',
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}
+                              >
+                                <Trash2 size={14} />
+                                <span>Удалить профиль</span>
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
           </div>
         </motion.div>
 
-        {/* REFINED SERIOUS CONFIRMATION MODAL (Request 1: Serious styling) */}
+        {/* REFINED SERIOUS CONFIRMATION MODAL */}
         <AnimatePresence>
           {deleteConfirm.isOpen && (
             <div
