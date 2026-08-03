@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
         if (Array.isArray(data) && data.length > 0) {
           setUsers(data);
           localStorage.setItem('nova_study_users_v2', JSON.stringify(data));
-          return;
+          return data;
         }
       }
     } catch (err) {
@@ -41,14 +41,18 @@ export function AuthProvider({ children }) {
         if (!hasAdmin) {
           const updated = [DEFAULT_ADMIN, ...parsed];
           setUsers(updated);
+          return updated;
         } else {
           setUsers(parsed);
+          return parsed;
         }
       } catch (e) {
         setUsers([DEFAULT_ADMIN]);
+        return [DEFAULT_ADMIN];
       }
     } else {
       setUsers([DEFAULT_ADMIN]);
+      return [DEFAULT_ADMIN];
     }
   };
 
@@ -80,8 +84,14 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const login = (username, password, rememberMe = true) => {
-    const found = users.find(
+  // Real-Time Async Login (Always fetches fresh DB from Oracle VPS Server)
+  const login = async (username, password, rememberMe = true) => {
+    let freshUsers = await loadUsersFromAPI();
+    if (!freshUsers || freshUsers.length === 0) {
+      freshUsers = users;
+    }
+
+    const found = freshUsers.find(
       (u) => u.username.trim().toLowerCase() === username.trim().toLowerCase() && u.password === password
     );
 
@@ -102,7 +112,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('nova_study_current_user');
   };
 
-  const createUser = (newUserObj) => {
+  const createUser = async (newUserObj) => {
     const user = {
       id: 'user_' + Date.now(),
       statusStage: 0, // 0 to 7
@@ -112,11 +122,11 @@ export function AuthProvider({ children }) {
       ...newUserObj
     };
     const updated = [user, ...users];
-    saveUsers(updated);
+    await saveUsers(updated);
     return user;
   };
 
-  const updateUserStatus = (userId, statusStage, note = '', feePaid = null) => {
+  const updateUserStatus = async (userId, statusStage, note = '', feePaid = null) => {
     const updated = users.map((u) => {
       if (u.id === userId) {
         return {
@@ -129,7 +139,7 @@ export function AuthProvider({ children }) {
       }
       return u;
     });
-    saveUsers(updated);
+    await saveUsers(updated);
 
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updated.find((u) => u.id === userId);
@@ -141,7 +151,7 @@ export function AuthProvider({ children }) {
   };
 
   // Bulk update multiple students' stage at once
-  const updateBulkUserStatus = (userIdsArray, statusStage, feePaid = null) => {
+  const updateBulkUserStatus = async (userIdsArray, statusStage, feePaid = null) => {
     const updated = users.map((u) => {
       if (userIdsArray.includes(u.id)) {
         return {
@@ -153,7 +163,7 @@ export function AuthProvider({ children }) {
       }
       return u;
     });
-    saveUsers(updated);
+    await saveUsers(updated);
 
     if (currentUser && userIdsArray.includes(currentUser.id)) {
       const updatedSelf = updated.find((u) => u.id === currentUser.id);
@@ -162,7 +172,7 @@ export function AuthProvider({ children }) {
   };
 
   // Upload Document
-  const uploadUserDoc = (userId, docObj) => {
+  const uploadUserDoc = async (userId, docObj) => {
     const updated = users.map((u) => {
       if (u.id === userId) {
         const docs = u.documents || [];
@@ -182,7 +192,7 @@ export function AuthProvider({ children }) {
       }
       return u;
     });
-    saveUsers(updated);
+    await saveUsers(updated);
 
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updated.find((u) => u.id === userId);
@@ -191,7 +201,7 @@ export function AuthProvider({ children }) {
   };
 
   // Delete Document
-  const deleteUserDoc = (userId, docId) => {
+  const deleteUserDoc = async (userId, docId) => {
     const updated = users.map((u) => {
       if (u.id === userId) {
         return {
@@ -201,7 +211,7 @@ export function AuthProvider({ children }) {
       }
       return u;
     });
-    saveUsers(updated);
+    await saveUsers(updated);
 
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updated.find((u) => u.id === userId);
@@ -210,7 +220,7 @@ export function AuthProvider({ children }) {
   };
 
   // Replace Document
-  const replaceUserDoc = (userId, docId, newDocObj) => {
+  const replaceUserDoc = async (userId, docId, newDocObj) => {
     const updated = users.map((u) => {
       if (u.id === userId) {
         const docs = (u.documents || []).map((d) => {
@@ -229,7 +239,7 @@ export function AuthProvider({ children }) {
       }
       return u;
     });
-    saveUsers(updated);
+    await saveUsers(updated);
 
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updated.find((u) => u.id === userId);
@@ -238,14 +248,14 @@ export function AuthProvider({ children }) {
   };
 
   // Update Profile Data
-  const updateUserProfile = (userId, profileData) => {
+  const updateUserProfile = async (userId, profileData) => {
     const updated = users.map((u) => {
       if (u.id === userId) {
         return { ...u, ...profileData };
       }
       return u;
     });
-    saveUsers(updated);
+    await saveUsers(updated);
 
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updated.find((u) => u.id === userId);
@@ -254,9 +264,9 @@ export function AuthProvider({ children }) {
   };
 
   // Delete User
-  const deleteUser = (userId) => {
+  const deleteUser = async (userId) => {
     const updated = users.filter((u) => u.id !== userId);
-    saveUsers(updated);
+    await saveUsers(updated);
   };
 
   return (

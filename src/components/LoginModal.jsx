@@ -10,6 +10,7 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // LOCK BODY SCROLLING WHEN MODAL IS OPEN (Request 2)
   useEffect(() => {
@@ -37,18 +38,25 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
   if (!isOpen) return null;
   const t = translations[currentLang]?.auth || translations.ru.auth;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    const res = login(username, password, rememberMe);
-    if (res.success) {
-      setUsername('');
-      setPassword('');
-      onClose();
-      if (onLoginSuccess) onLoginSuccess(res.user);
-    } else {
-      setError(t.errorInvalid || 'Неверный логин или пароль');
+    try {
+      const res = await login(username, password, rememberMe);
+      if (res.success) {
+        setUsername('');
+        setPassword('');
+        onClose();
+        if (onLoginSuccess) onLoginSuccess(res.user);
+      } else {
+        setError(t.errorInvalid || 'Неверный логин или пароль');
+      }
+    } catch (err) {
+      setError('Ошибка подключения к серверу');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -220,9 +228,9 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
               </span>
             </label>
 
-            <button type="submit" className="btn-cyan" style={{ justifyContent: 'center', padding: '14px', fontSize: '15px', marginTop: '8px' }}>
+            <button type="submit" disabled={loading} className="btn-cyan" style={{ justifyContent: 'center', padding: '14px', fontSize: '15px', marginTop: '8px', opacity: loading ? 0.7 : 1 }}>
               <Sparkles size={16} />
-              <span>{t.btnLogin}</span>
+              <span>{loading ? 'Проверка...' : t.btnLogin}</span>
             </button>
           </form>
         </motion.div>
