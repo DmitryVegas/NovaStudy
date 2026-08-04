@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Sparkles, CheckCircle2, MessageCircle } from 'lucide-react';
 import { translations } from '../data/translations';
 import { config } from '../data/config';
+import { ThemeContext } from '../context/ThemeContext';
 
 export default function ConsultationModal({ isOpen, onClose, selectedUniversity, currentLang, onLeadSubmitted }) {
+  const { theme } = useContext(ThemeContext);
+  const isLight = theme === 'light';
+
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
 
   useEffect(() => {
@@ -89,8 +93,12 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
 
   return (
     <AnimatePresence>
-      {/* Backdrop DOES NOT close on click */}
+      {/* Backdrop closes on click */}
       <div
+        onClick={() => {
+          setIsSubmitted(false);
+          onClose();
+        }}
         style={{
           position: 'fixed',
           inset: 0,
@@ -99,7 +107,7 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
           alignItems: 'center',
           justifyContent: 'center',
           padding: isMobile ? '12px' : '20px',
-          background: 'rgba(7, 10, 18, 0.88)',
+          background: isLight ? 'rgba(15, 23, 42, 0.65)' : 'rgba(7, 10, 18, 0.88)',
           backdropFilter: 'blur(14px)'
         }}
       >
@@ -107,16 +115,18 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="glass-panel consultation-modal-container"
+          onClick={(e) => e.stopPropagation()}
+          className="consultation-modal-container"
           style={{
             maxWidth: '560px',
             width: isMobile ? '94vw' : '100%',
             position: 'relative',
             borderRadius: isMobile ? '20px' : '24px',
-            background: '#0e1424',
-            border: '1px solid rgba(37, 99, 235, 0.3)',
+            background: isLight ? '#ffffff' : '#0e1424',
+            border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(37, 99, 235, 0.3)',
             padding: isMobile ? '24px 18px' : '32px',
-            boxShadow: '0 25px 60px rgba(37, 99, 235, 0.25)'
+            boxShadow: isLight ? '0 25px 60px rgba(15, 23, 42, 0.2)' : '0 25px 60px rgba(37, 99, 235, 0.25)',
+            color: isLight ? '#0f172a' : '#ffffff'
           }}
         >
           {/* Close Button strictly inside top right */}
@@ -130,16 +140,18 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
               position: 'absolute',
               top: isMobile ? '14px' : '20px',
               right: isMobile ? '14px' : '20px',
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: 'none',
-              color: '#fff',
-              width: '36px',
-              height: '36px',
+              zIndex: 100,
+              background: isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.15)',
+              border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.25)',
+              color: isLight ? '#0f172a' : '#ffffff',
+              width: '38px',
+              height: '38px',
               borderRadius: '50%',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
             }}
           >
             <X size={20} />
