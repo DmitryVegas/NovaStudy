@@ -1028,6 +1028,18 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     <input type="password" required value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px' }} />
                   </div>
                   <div>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{t.nameLabel}</label>
+                    <input type="text" placeholder="Алишер Каримов" value={newUser.name} onChange={(e) => setNewUser({ ...newUser, name: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{t.phoneLabel}</label>
+                    <input type="tel" placeholder="+998 90 123 45 67" value={newUser.phone} onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{t.passportLabel}</label>
+                    <input type="text" placeholder="AA1234567" value={newUser.passportNumber} onChange={(e) => setNewUser({ ...newUser, passportNumber: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px' }} />
+                  </div>
+                  <div>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Роль *</label>
                     <select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: isLight ? '#fff' : '#090d16', color: isLight ? '#0f172a' : '#fff' }}>
                       <option value="student">{t.studentRoleOpt}</option>
