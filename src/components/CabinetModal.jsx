@@ -119,15 +119,18 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
   const [bulkStage, setBulkStage] = useState(0);
   const [bulkFeePaid, setBulkFeePaid] = useState(false);
 
-  // LOCK BODY SCROLLING WHEN CABINET IS OPEN
+  // LOCK BODY & DOCUMENT SCROLLING WHEN CABINET IS OPEN
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
   }, [isOpen]);
 
@@ -753,18 +756,18 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
             {/* Client Leads View (For Admin & Staff) */}
             {isSuperUser && activeTab === 'leads' && (
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px', paddingRight: isMobile ? '0' : '48px' }}>
                   <div>
                     <h3 style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '4px' }}>
-                      База Заявок Клиентов
+                      {t.leadsTitle || 'База Заявок Клиентов Nova Study'}
                     </h3>
                     <p style={{ fontSize: '13px', color: isLight ? '#64748b' : '#9ca3af' }}>
-                      Всего поступило заявок: <strong style={{ color: '#2563eb' }}>{leads.length}</strong>
+                      {t.leadsTotal || 'Всего поступило заявок:'} <strong style={{ color: '#2563eb' }}>{leads.length}</strong>
                     </p>
                   </div>
 
                   {leads.length > 0 && (
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                       <button
                         onClick={handleExportLeadsCSV}
                         style={{
@@ -783,7 +786,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                         }}
                       >
                         <Download size={15} />
-                        <span>Скачать CSV / Excel</span>
+                        <span>{t.downloadCsv || 'Скачать CSV / Excel'}</span>
                       </button>
 
                       <button
@@ -801,7 +804,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                           alignItems: 'center',
                           gap: '6px'
                         }}
-                        title="Очистить все заявки"
+                        title={t.clearAllLeads || 'Очистить все заявки'}
                       >
                         <Trash2 size={15} />
                       </button>
@@ -812,9 +815,9 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                 {leads.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '60px 20px', color: isLight ? '#64748b' : '#9ca3af' }}>
                     <Clock size={44} color={isLight ? '#94a3b8' : '#6b7280'} style={{ marginBottom: '12px' }} />
-                    <p style={{ fontSize: '16px', fontWeight: 700 }}>Заявок клиентов пока нет</p>
+                    <p style={{ fontSize: '16px', fontWeight: 700 }}>{t.noLeadsTitle || 'Заявок клиентов пока нет'}</p>
                     <p style={{ fontSize: '13px', color: isLight ? '#94a3b8' : '#6b7280', marginTop: '4px' }}>
-                      Когда посетители заполняют форму записи на консультацию на сайте, поступившие заявки отображаются здесь!
+                      {t.noLeadsDesc || 'Когда посетители заполняют форму записи на консультацию на сайте, поступившие заявки отображаются здесь!'}
                     </p>
                   </div>
                 ) : (
@@ -839,7 +842,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                           <div style={{ fontSize: '16px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span>{lead.name}</span>
                             <span style={{ fontSize: '11px', background: isLight ? 'rgba(37, 99, 235, 0.1)' : 'rgba(37, 99, 235, 0.2)', color: isLight ? '#2563eb' : '#60a5fa', padding: '2px 8px', borderRadius: '8px', fontWeight: 800 }}>
-                              {(lead.program || 'УНИВЕРСИТЕТ').toUpperCase()}
+                              {getProgramBadgeLabel(lead.program)}
                             </span>
                           </div>
 
@@ -867,7 +870,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                               <span>{lead.createdAt}</span>
                             </div>
                             <div style={{ color: '#10b981', fontWeight: 800, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
-                              <CheckCircle2 size={12} /> Новая заявка
+                              <CheckCircle2 size={12} /> {t.newLeadBadge || 'Новая заявка'}
                             </div>
                           </div>
 
@@ -884,7 +887,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                               alignItems: 'center',
                               justifyContent: 'center'
                             }}
-                            title="Удалить заявку"
+                            title={t.deleteBtn || 'Удалить'}
                           >
                             <Trash2 size={16} />
                           </button>
