@@ -1093,7 +1093,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{t.nameLabel}</label>
                     <input
                       type="text"
-                      placeholder="Алишер Каримов"
+                      placeholder="Alisher Karimov"
                       value={newUser.name}
                       onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                       style={{
