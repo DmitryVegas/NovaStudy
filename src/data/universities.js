@@ -162,7 +162,7 @@ export const universities = [
   },
   {
     id: "busan-national",
-    name: "Pusan National University",
+    name: "Busan National University",
     nativeName: "부산대학교",
     city: "Busan",
     cityRu: "Пусан",

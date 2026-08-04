@@ -15,7 +15,7 @@ export const testimonialsData = [
     id: 2,
     name: "Мадина Мурадова",
     city: "Самарканд ➔ Пусан",
-    university: "Pusan National University",
+    university: "Busan National University",
     program: "Магистратура (International Trade)",
     scholarship: "100% GKS Government Grant",
     topik: "IELTS 7.0 + TOPIK 3",

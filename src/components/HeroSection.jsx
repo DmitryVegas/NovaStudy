@@ -99,7 +99,7 @@ export default function HeroSection({ currentLang, onOpenConsultation, onScrollT
     { name: 'Yonsei University', rank: 'TOP #3 SKY', flag: '🦅' },
     { name: 'Hanyang University', rank: 'Leader in Eng.', flag: '⚙️' },
     { name: 'Inha University', rank: 'Logistics & Tech', flag: '✈️' },
-    { name: 'Pusan National Univ.', rank: 'Top National', flag: '🏛️' },
+    { name: 'Busan National Univ.', rank: 'Top National', flag: '🏛️' },
     { name: 'Keimyung University', rank: 'Daegu Campus', flag: '🌸' }
   ];
 
