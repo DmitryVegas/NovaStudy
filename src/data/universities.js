@@ -7,7 +7,7 @@ export const universities = [
     cityRu: "Сеул",
     rank: 1,
     badge: "TOP #1 SKY",
-    image: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/unis/snu.jpg",
     logo: "🏛️",
     type: ["bachelor", "master", "gks"],
     topikReq: {
@@ -57,7 +57,7 @@ export const universities = [
     cityRu: "Сеул",
     rank: 2,
     badge: "TOP #2 SKY",
-    image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/unis/korea-univ.jpg",
     logo: "🦁",
     type: ["bachelor", "master", "language", "gks"],
     topikReq: {
@@ -107,7 +107,7 @@ export const universities = [
     cityRu: "Сеул",
     rank: 3,
     badge: "TOP #3 SKY",
-    image: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/unis/yonsei.jpg",
     logo: "🦅",
     type: ["bachelor", "master", "language", "gks"],
     topikReq: {
@@ -157,7 +157,7 @@ export const universities = [
     cityRu: "Тэджон",
     rank: 4,
     badge: "TOP Tech & IT",
-    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/unis/kaist.jpg",
     logo: "⚡",
     type: ["bachelor", "master", "gks"],
     topikReq: {
@@ -207,7 +207,7 @@ export const universities = [
     cityRu: "Сеул",
     rank: 6,
     badge: "Leader in Engineering",
-    image: "https://images.unsplash.com/photo-1492538368677-f6e0afe31dcc?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/unis/hanyang.jpg",
     logo: "⚙️",
     type: ["bachelor", "master", "language"],
     topikReq: {
@@ -257,7 +257,7 @@ export const universities = [
     cityRu: "Сеул",
     rank: 11,
     badge: "Popular with CIS Students",
-    image: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/unis/dongguk.jpg",
     logo: "🌸",
     type: ["bachelor", "master", "language", "college"],
     topikReq: {
@@ -307,7 +307,7 @@ export const universities = [
     cityRu: "Инчхон",
     rank: 12,
     badge: "Logistics & Tech",
-    image: "https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/unis/inha.jpg",
     logo: "✈️",
     type: ["bachelor", "master", "language"],
     topikReq: {
@@ -357,7 +357,7 @@ export const universities = [
     cityRu: "Пусан",
     rank: 9,
     badge: "Top National in Busan",
-    image: "https://images.unsplash.com/photo-1576495199011-eb94736d05d6?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/unis/busan-national.jpg",
     logo: "🌊",
     type: ["bachelor", "master", "language", "gks"],
     topikReq: {
