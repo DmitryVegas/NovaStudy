@@ -170,7 +170,9 @@ export default function UniversityModal({ university, onClose, onApply, currentL
                 border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)'
               }}>
                 <div style={{ fontSize: '12px', color: isLight ? '#64748b' : '#9ca3af', marginBottom: '4px', fontWeight: 600 }}>{t.topikReq}</div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: isLight ? '#0284c7' : '#00f0ff' }}>{university.topikReq}</div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: isLight ? '#0284c7' : '#00f0ff' }}>
+                  {typeof university.topikReq === 'object' ? (university.topikReq[currentLang] || university.topikReq.ru) : university.topikReq}
+                </div>
               </div>
 
               <div style={{

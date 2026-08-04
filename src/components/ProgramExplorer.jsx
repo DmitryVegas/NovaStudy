@@ -300,7 +300,9 @@ export default function ProgramExplorer({ currentLang, onSelectUniversity, onOpe
                       </div>
                       <div>
                         <div style={{ fontSize: '11px', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 700 }}>{tCard.topik}</div>
-                        <div style={{ fontSize: '15px', fontWeight: 800, color: '#60a5fa', marginTop: '2px' }}>{uni.topikReq}</div>
+                        <div style={{ fontSize: '15px', fontWeight: 800, color: '#60a5fa', marginTop: '2px' }}>
+                          {typeof uni.topikReq === 'object' ? (uni.topikReq[currentLang] || uni.topikReq.ru) : uni.topikReq}
+                        </div>
                       </div>
                     </div>
                   </div>
