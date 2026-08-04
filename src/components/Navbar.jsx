@@ -196,7 +196,8 @@ export default function Navbar({ currentLang, setLang, onOpenConsultation, onOpe
                   {[
                     { code: 'ru', label: 'Русский (RU)' },
                     { code: 'uz', label: "O'zbekcha (UZ)" },
-                    { code: 'en', label: 'English (EN)' }
+                    { code: 'en', label: 'English (EN)' },
+                    { code: 'ko', label: '한국어 (KO)' }
                   ].map((item) => (
                     <button
                       key={item.code}
