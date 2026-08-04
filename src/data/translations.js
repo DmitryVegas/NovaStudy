@@ -941,7 +941,18 @@ export const translations = {
       badge: "성공 유학 가이드",
       title: "한국 유학 입학 수속",
       titleHighlight: "5단계 프로세스",
-      subtitle: "상담부터 입학허가서 발급 및 한국 출국까지 Nova Study가 함께합니다."
+      subtitle: "첫 입학 상담부터 합격허가서 발급, 비자 수속 및 한국 출국 현지 케어까지 Nova Study가 함께합니다.",
+      step1Title: "1. 1:1 맞춤 무료 입학 상담",
+      step1Desc: "학생의 성적, TOPIK/IELTS 어학 능력 및 희망 전공을 정밀 분석하여 최적의 대학 3~5곳을 추천합니다.",
+      step2Title: "2. 서류 번역 공증 및 아포스티유",
+      step2Desc: "학위 증명서, 성적표 아포스티유 인증, 영문/한글 번역 공증 및 학업계획서(Study Plan) 작성 및 검토.",
+      step3Title: "3. 대학교 원서 접수 및 면접 지도",
+      step3Desc: "한국 대학교 입학처 전형 원서 제출 및 교수님 1:1 심층 입학 면접 대비 밀착 코칭.",
+      step4Title: "4. 입학허가서(CoA) 발급 및 비자 수속",
+      step4Desc: "최종 합격 후 표준입학허가서 발급 완료 및 주우즈베키스탄 대한민국 대사관 D-2/D-4 비자 접수.",
+      step5Title: "5. 항공권 예매, 출국 및 현지 정착",
+      step5Desc: "항공권 예약, 대학교 기숙사/자취방 픽업 안내, 한국 오리엔테이션 및 24시간 전담 학생 케어.",
+      btnStart: "Nova Study와 함께 첫 걸음 시작하기"
     },
     faq: {
       badge: "궁금증 해결",
