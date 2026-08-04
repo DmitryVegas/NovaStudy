@@ -106,14 +106,14 @@ export default function UniversityModal({ university, onClose, onApply, currentL
             <X size={20} />
           </button>
 
-          {/* Banner Image with dark overlay gradient for white text contrast */}
-          <div style={{ position: 'relative', height: '260px' }}>
+          {/* Banner Image with subtle bottom gradient for text contrast */}
+          <div style={{ position: 'relative', height: '280px' }}>
             <img
               src={university.image}
               alt={university.name}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0.85) 100%)' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 55%, rgba(10, 15, 26, 0.8) 100%)' }} />
 
             <div style={{ position: 'absolute', bottom: '20px', left: '24px', right: '24px' }}>
               <div

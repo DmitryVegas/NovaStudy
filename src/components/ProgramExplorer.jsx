@@ -217,12 +217,12 @@ export default function ProgramExplorer({ currentLang, onSelectUniversity, onOpe
                     padding: '16px'
                   }}
                 >
-                  {/* Dark Gradient Overlay for perfect text contrast */}
+                  {/* Subtle bottom edge gradient for white text legibility */}
                   <div
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0.95) 100%)',
+                      background: 'linear-gradient(180deg, transparent 55%, rgba(10, 15, 26, 0.8) 100%)',
                       zIndex: 1
                     }}
                   />
