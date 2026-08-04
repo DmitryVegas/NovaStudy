@@ -227,6 +227,39 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
     setSelectedStudentIds([]);
   };
 
+  const [searchUserQuery, setSearchUserQuery] = useState('');
+
+  // Helper for program badge translation
+  const getProgramBadgeLabel = (progKey) => {
+    if (!progKey) return 'УНИВЕРСИТЕТ';
+    const keyLower = String(progKey).toLowerCase().trim();
+    if (t?.programs && t.programs[keyLower]) {
+      return t.programs[keyLower];
+    }
+    if (keyLower === 'bachelor') return 'BAKALAVRIAT (D-2-2)';
+    if (keyLower === 'language') return 'TIL KURSLARI (D-4)';
+    if (keyLower === 'master') return 'MAGISTRATURA (D-2-3)';
+    if (keyLower === 'college') return 'KOLLEJ (ASSOCIATE)';
+    if (keyLower === 'gks') return 'GKS HUKUMAT GRANTI';
+    return String(progKey).toUpperCase();
+  };
+
+  // Filter logic for All Registered Profiles
+  const filteredUsers = users.filter((u) => {
+    if (selectedRoleFilter === 'students' && u.role !== 'student') return false;
+    if (selectedRoleFilter === 'staff' && u.role !== 'staff' && u.role !== 'admin') return false;
+
+    if (searchUserQuery.trim()) {
+      const q = searchUserQuery.trim().toLowerCase();
+      const matchName = String(u.name || '').toLowerCase().includes(q);
+      const matchPhone = String(u.phone || '').toLowerCase().includes(q);
+      const matchPassport = String(u.passportNumber || '').toLowerCase().includes(q);
+      const matchUsername = String(u.username || '').toLowerCase().includes(q);
+      return matchName || matchPhone || matchPassport || matchUsername;
+    }
+    return true;
+  });
+
   if (!isOpen || !currentUser) return null;
   const t = translations[currentLang]?.cabinet || translations.ru.cabinet;
   const tAuth = translations[currentLang]?.auth || translations.ru.auth;
@@ -1024,27 +1057,103 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                 <form onSubmit={handleCreateUserSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px', marginBottom: '36px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Логин *</label>
-                    <input type="text" required value={newUser.username} onChange={(e) => setNewUser({ ...newUser, username: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px' }} />
+                    <input
+                      type="text"
+                      required
+                      value={newUser.username}
+                      onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '10px',
+                        background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.05)',
+                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
+                        color: isLight ? '#0f172a' : '#ffffff'
+                      }}
+                    />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Пароль *</label>
-                    <input type="password" required value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px' }} />
+                    <input
+                      type="password"
+                      required
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '10px',
+                        background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.05)',
+                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
+                        color: isLight ? '#0f172a' : '#ffffff'
+                      }}
+                    />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{t.nameLabel}</label>
-                    <input type="text" placeholder="Алишер Каримов" value={newUser.name} onChange={(e) => setNewUser({ ...newUser, name: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px' }} />
+                    <input
+                      type="text"
+                      placeholder="Алишер Каримов"
+                      value={newUser.name}
+                      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '10px',
+                        background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.05)',
+                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
+                        color: isLight ? '#0f172a' : '#ffffff'
+                      }}
+                    />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{t.phoneLabel}</label>
-                    <input type="tel" placeholder="+998 90 123 45 67" value={newUser.phone} onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px' }} />
+                    <input
+                      type="tel"
+                      placeholder="+998 90 123 45 67"
+                      value={newUser.phone}
+                      onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '10px',
+                        background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.05)',
+                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
+                        color: isLight ? '#0f172a' : '#ffffff'
+                      }}
+                    />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{t.passportLabel}</label>
-                    <input type="text" placeholder="AA1234567" value={newUser.passportNumber} onChange={(e) => setNewUser({ ...newUser, passportNumber: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px' }} />
+                    <input
+                      type="text"
+                      placeholder="AA1234567"
+                      value={newUser.passportNumber}
+                      onChange={(e) => setNewUser({ ...newUser, passportNumber: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '10px',
+                        background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.05)',
+                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
+                        color: isLight ? '#0f172a' : '#ffffff'
+                      }}
+                    />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Роль *</label>
-                    <select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: isLight ? '#fff' : '#090d16', color: isLight ? '#0f172a' : '#fff' }}>
+                    <select
+                      value={newUser.role}
+                      onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '10px',
+                        background: isLight ? '#ffffff' : '#090d16',
+                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
+                        color: isLight ? '#0f172a' : '#ffffff'
+                      }}
+                    >
                       <option value="student">{t.studentRoleOpt}</option>
                       <option value="staff">{t.staffRoleOpt}</option>
                     </select>
@@ -1054,12 +1163,82 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   </button>
                 </form>
 
+                {/* Search Bar & Role Filters for All Profiles */}
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
+                    <Search size={16} color="#2563eb" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input
+                      type="text"
+                      placeholder={t.searchUserPlaceholder || 'Поиск по ФИО, телефону (+998, 77, 555) или логину...'}
+                      value={searchUserQuery}
+                      onChange={(e) => setSearchUserQuery(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px 10px 36px',
+                        borderRadius: '10px',
+                        fontSize: '13px',
+                        background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.05)',
+                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
+                        color: isLight ? '#0f172a' : '#ffffff'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px', background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.05)', padding: '4px', borderRadius: '10px' }}>
+                    <button
+                      onClick={() => setSelectedRoleFilter('all')}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: selectedRoleFilter === 'all' ? '#2563eb' : 'transparent',
+                        color: selectedRoleFilter === 'all' || !isLight ? '#ffffff' : '#475569'
+                      }}
+                    >
+                      {t.tabFilterAll || 'Все'}
+                    </button>
+                    <button
+                      onClick={() => setSelectedRoleFilter('students')}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: selectedRoleFilter === 'students' ? '#2563eb' : 'transparent',
+                        color: selectedRoleFilter === 'students' || !isLight ? '#ffffff' : '#475569'
+                      }}
+                    >
+                      {t.tabFilterStudents || 'Студенты'}
+                    </button>
+                    <button
+                      onClick={() => setSelectedRoleFilter('staff')}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: selectedRoleFilter === 'staff' ? '#2563eb' : 'transparent',
+                        color: selectedRoleFilter === 'staff' || !isLight ? '#ffffff' : '#475569'
+                      }}
+                    >
+                      {t.tabFilterStaff || 'Сотрудники'}
+                    </button>
+                  </div>
+                </div>
+
                 {/* All Users List */}
                 <h4 style={{ fontSize: '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '14px' }}>
-                  {t.allAccountsTitle} ({users.length})
+                  {t.allAccountsTitle} ({filteredUsers.length})
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {users.map((u) => (
+                  {filteredUsers.map((u) => (
                     <div key={u.id} style={{ padding: '14px 18px', background: isLight ? '#fff' : 'rgba(255, 255, 255, 0.03)', border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                       <div>
                         <div style={{ fontWeight: 800, fontSize: '15px' }}>{u.username} <span style={{ fontSize: '11px', color: '#2563eb', padding: '2px 8px', borderRadius: '6px', background: 'rgba(37, 99, 235, 0.1)' }}>{u.role}</span></div>
