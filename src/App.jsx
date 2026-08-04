@@ -17,7 +17,17 @@ import { AuthContext } from './context/AuthContext';
 
 export default function App() {
   const { currentUser } = useContext(AuthContext);
-  const [currentLang, setLang] = useState('ru');
+  
+  // Language State with localStorage Persistence Across Refresh
+  const [currentLang, setCurrentLangState] = useState(() => {
+    return localStorage.getItem('nova_study_lang') || 'ru';
+  });
+
+  const setLang = (newLang) => {
+    setCurrentLangState(newLang);
+    localStorage.setItem('nova_study_lang', newLang);
+  };
+
   const [selectedUniversity, setSelectedUniversity] = useState(null);
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
   const [isLeadsOpen, setIsLeadsOpen] = useState(false);
