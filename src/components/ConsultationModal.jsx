@@ -242,10 +242,10 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
                         outline: 'none'
                       }}
                     >
-                      <option value="language">Языковые курсы (D-4)</option>
-                      <option value="bachelor">Бакалавриат (D-2-2)</option>
-                      <option value="master">Магистратура (D-2-3)</option>
-                      <option value="gks">Грант GKS</option>
+                      <option value="language">{t.programOptions?.language || 'Языковые курсы (D-4)'}</option>
+                      <option value="bachelor">{t.programOptions?.bachelor || 'Бакалавриат (D-2-2)'}</option>
+                      <option value="master">{t.programOptions?.master || 'Магистратура (D-2-3)'}</option>
+                      <option value="gks">{t.programOptions?.gks || 'Грант GKS'}</option>
                     </select>
                   </div>
 
@@ -267,8 +267,8 @@ export default function ConsultationModal({ isOpen, onClose, selectedUniversity,
                         outline: 'none'
                       }}
                     >
-                      <option value="2026">2026 год (Осень)</option>
-                      <option value="2027">2027 год (Весна)</option>
+                      <option value="2026">{t.yearOptions?.y2026 || '2026 год (Осень)'}</option>
+                      <option value="2027">{t.yearOptions?.y2027 || '2027 год (Весна)'}</option>
                     </select>
                   </div>
                 </div>

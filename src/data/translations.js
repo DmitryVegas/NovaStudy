@@ -217,7 +217,7 @@ export const translations = {
       title: "Запишитесь на бесплатную консультацию",
       subtitle: "Эксперт Nova Study свяжется с вами в течение 15 минут и составит индивидуальный план поступления.",
       nameLabel: "Ваше Имя и Фамилия",
-      namePlaceholder: "Алишер Каримов",
+      namePlaceholder: "Alisher Karimov",
       phoneLabel: "Номер телефона",
       phonePlaceholder: "+998 90 123 45 67",
       programLabel: "Интересующая программа",
@@ -227,7 +227,17 @@ export const translations = {
       successTitle: "Заявка успешно отправлена!",
       successDesc: "Наш менеджер уже обрабатывает вашу заявку. Вы также можете написать нам напрямую:",
       btnTelegram: "Написать в Telegram",
-      btnWhatsapp: "Написать в WhatsApp"
+      btnWhatsapp: "Написать в WhatsApp",
+      programOptions: {
+        language: "Языковые курсы (D-4)",
+        bachelor: "Бакалавриат (D-2-2)",
+        master: "Магистратура (D-2-3)",
+        gks: "Грант GKS"
+      },
+      yearOptions: {
+        y2026: "2026 год (Осень)",
+        y2027: "2027 год (Весна)"
+      }
     },
     footer: {
       desc: "Nova Study — ведущее агентство по международному образованию в Южной Корее. Официальный партнер более 45 университетов Сеула, Пусана и Тэгу.",
@@ -469,7 +479,17 @@ export const translations = {
       successTitle: "Ariza muvaffaqiyatli yuborildi!",
       successDesc: "Menejerimiz arizangizni ko'rib chiqmoqda. Shuningdek, bizga dog'rudan yozishingiz mumkin:",
       btnTelegram: "Telegramda yozish",
-      btnWhatsapp: "WhatsAppda yozish"
+      btnWhatsapp: "WhatsAppda yozish",
+      programOptions: {
+        language: "Til kurslari (D-4)",
+        bachelor: "Bakalavriat (D-2-2)",
+        master: "Magistratura (D-2-3)",
+        gks: "GKS Granti"
+      },
+      yearOptions: {
+        y2026: "2026 yil (Kuz)",
+        y2027: "2027 yil (Bahor)"
+      }
     },
     footer: {
       desc: "Nova Study — Janubiy Koreyada xalqaro ta'lim bo'yicha yetakchi agentlik. Seul, Busan va Daegu shaharlaridagi 45 dan ortiq universitetlarning rasmiy hamkori.",
@@ -711,7 +731,17 @@ export const translations = {
       successTitle: "Application Submitted Successfully!",
       successDesc: "Our advisor is reviewing your request. You can also chat directly with us:",
       btnTelegram: "Message on Telegram",
-      btnWhatsapp: "Message on WhatsApp"
+      btnWhatsapp: "Message on WhatsApp",
+      programOptions: {
+        language: "Language Courses (D-4)",
+        bachelor: "Bachelor (D-2-2)",
+        master: "Master (D-2-3)",
+        gks: "GKS Scholarship"
+      },
+      yearOptions: {
+        y2026: "2026 (Fall)",
+        y2027: "2027 (Spring)"
+      }
     },
     footer: {
       desc: "Nova Study is a premier education consulting agency specialized exclusively in South Korea. Official partner of 45+ universities across Seoul, Busan, and Daegu.",
@@ -923,7 +953,7 @@ export const translations = {
       title: "무료 입학 상담 신청",
       subtitle: "Nova Study 전문 수속 매니저가 15분 이내에 연락드려 1:1 맞춤 입학 플랜을 설계해 드립니다.",
       nameLabel: "성명 (한글/영문)",
-      namePlaceholder: "예: 홍길동 / Alisher Karimov",
+      namePlaceholder: "Alisher Karimov",
       phoneLabel: "연락처 (전화번호)",
       phonePlaceholder: "+998 90 123 45 67",
       programLabel: "관심 학위 과정",
@@ -932,7 +962,17 @@ export const translations = {
       submitBtn: "상담 신청서 제출하기",
       successTitle: "상담 신청이 접수되었습니다!",
       successDesc: "Nova Study 전문 매니저가 조속히 연락드리겠습니다.",
-      btnTelegram: "텔레그램으로 바로 문의하기"
+      btnTelegram: "텔레그램으로 바로 문의하기",
+      programOptions: {
+        language: "어학연수 과정 (D-4)",
+        bachelor: "학사 학위 과정 (D-2-2)",
+        master: "석사 학위 과정 (D-2-3)",
+        gks: "GKS 정부초청 장학금"
+      },
+      yearOptions: {
+        y2026: "2026년 (가을학기)",
+        y2027: "2027년 (봄학기)"
+      }
     },
     quickActions: {
       call: "전화 상담",
