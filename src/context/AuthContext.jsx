@@ -6,7 +6,7 @@ const DEFAULT_ADMIN = {
   id: 'admin_darkxan',
   username: 'DarkXAN',
   password: 'as246800',
-  name: 'DarkXAN (Главный Администратор)',
+  name: 'DarkXAN',
   role: 'admin', // admin, staff, student
   phone: '+82 010-8179-2266',
   createdAt: new Date().toLocaleDateString()

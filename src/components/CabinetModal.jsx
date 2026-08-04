@@ -363,7 +363,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
               >
                 <div>
                   <div style={{ fontSize: isMobile ? '15px' : '16px', fontWeight: 800, color: isLight ? '#0f172a' : '#ffffff' }}>
-                    {currentUser.name || currentUser.username}
+                    {currentUser.name === 'DarkXAN (Главный Администратор)' ? 'DarkXAN' : (currentUser.name || currentUser.username)}
                   </div>
                   <div style={{
                     display: 'inline-block',
@@ -578,7 +578,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                       }}
                     >
                       <Users size={isMobile ? 16 : 18} />
-                      <span>Заявки клиентов ({leads.length})</span>
+                      <span>{t.tabLeads || 'Mijozlar So\'rovnomalari'} ({leads.length})</span>
                     </button>
 
                     <button
@@ -1056,7 +1056,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                 </h3>
                 <form onSubmit={handleCreateUserSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px', marginBottom: '36px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Логин *</label>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{t.usernameLabel || t.usernameShort || 'Login'} *</label>
                     <input
                       type="text"
                       required
@@ -1073,7 +1073,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Пароль *</label>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{t.passwordLabel || t.passwordShort || 'Parol'} *</label>
                     <input
                       type="password"
                       required
@@ -1141,7 +1141,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Роль *</label>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{t.accountType || 'Roli'} *</label>
                     <select
                       value={newUser.role}
                       onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}

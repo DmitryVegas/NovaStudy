@@ -865,20 +865,33 @@ export const translations = {
       topik: "요구 TOPIK",
       grant: "최대 장학금"
     },
-    grantCalculator: {
-      badge: "AI 기반 솔루션",
-      title: "나의 합격 및 장학금",
-      titleHighlight: "진단 테스트",
-      subtitle: "현재 한국어 능력 및 학점 성적을 입력하고 장학금 수혜 가능성을 실시간으로 확인하세요.",
-      topikLevel: "TOPIK 성적 (또는 IELTS)",
-      gpaLevel: "평균 학점 / 성적 (GPA)",
-      majorChoice: "희망 전공 분야",
-      calcBtn: "장학금 가능성 진단하기",
-      resultTitle: "장학금 진단 결과 분석",
-      chanceHigh: "장학금 수혜 가능성 매우 높음 (50%~100%)",
-      chanceMedium: "장학금 수혜 가능성 보통 (30%~50%)",
-      chanceLow: "입학 지원 가능 (어학연수 추천)",
-      applyConsultation: "전문가 맞춤 상담 신청하기"
+    calculator: {
+      badge: "AI 기반 장학금 진단 솔루션",
+      title: "장학금 수혜 가능성 진단 테스트",
+      subtitle: "현재 보유하신 한국어/영어 성적 및 학점 GPA를 바탕으로 예상 장학금 감면율을 실시간으로 확인하세요.",
+      labelTopik: "TOPIK 한국어 성적",
+      labelIelts: "IELTS / TOEFL 영어 성적",
+      labelGpa: "평균 학점 (GPA / 성적)",
+      btnCalculate: "나의 예상 장학금 진단하기",
+      resultTitle: "예상 장학금 진단 결과:",
+      resultSubtitle: "입력하신 성적을 바탕으로 첫 학기 등록금 감면 혜택을 받으실 수 있습니다!",
+      recommendation: "Nova Study 입학 전문가 제안:",
+      btnConsultation: "나의 성적 맞춤 전체 대학교 추천 리스트 받기",
+      prefixUpTo: "최대",
+      topikLevels: {
+        t0: "한국어 미보유 (0급 / 기초)",
+        t1: "TOPIK 1급 (초급)",
+        t2: "TOPIK 2급 (초급)",
+        t3: "TOPIK 3급 (중급)",
+        t4: "TOPIK 4급 (중급)",
+        t5: "TOPIK 5급 (고급)",
+        t6: "TOPIK 6급 (최고급)"
+      },
+      noIelts: "IELTS 성적 없음",
+      rec100: "탁월한 성적입니다! 서울 주요 명문대(서울대, 고려대, 연세대, 성균관대 등) 및 GKS 정부초청 장학생 100% 전액 장학금 최적의 후보자입니다.",
+      rec70: "우수한 성적입니다! 한국 주요 상위권 대학교(한양대, 인하대, 동국대 등)에서 50%~70% 등록금 감면 혜택을 지원받으실 수 있습니다.",
+      rec50: "안정적인 성적입니다! 학사 학위 과정 1학기 등록금 30%~50% 장학금 수혜가 가능합니다.",
+      rec30: "서울 소재 어학연수 과정(D-4 비자) 6개월 수강 후 TOPIK 4급을 취득하여 최대 100% 장학금으로 학위 과정에 진학하는 것을 추천합니다!"
     },
     roadmap: {
       badge: "성공 유학 가이드",
