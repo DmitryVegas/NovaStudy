@@ -4,7 +4,7 @@ import { X, MapPin, Award, CheckCircle2, DollarSign, BookOpen, GraduationCap, Sp
 import { translations } from '../data/translations';
 import { ThemeContext } from '../context/ThemeContext';
 
-export default function UniversityModal({ university, onClose, onApply }) {
+export default function UniversityModal({ university, onClose, onApply, currentLang }) {
   const { theme } = useContext(ThemeContext);
   const isLight = theme === 'light';
 
@@ -35,7 +35,17 @@ export default function UniversityModal({ university, onClose, onApply }) {
   }, [university, onClose]);
 
   if (!university) return null;
-  const t = translations.ru.modal;
+  const t = translations[currentLang]?.modal || translations.ru.modal;
+
+  const description = typeof university.description === 'object'
+    ? (university.description[currentLang] || university.description.ru)
+    : university.description;
+
+  const features = typeof university.features === 'object'
+    ? (university.features[currentLang] || university.features.ru)
+    : (Array.isArray(university.features) ? university.features : []);
+
+  const cityName = currentLang === 'ru' ? university.cityRu : university.city;
 
   return (
     <AnimatePresence>
@@ -132,7 +142,7 @@ export default function UniversityModal({ university, onClose, onApply }) {
               </h2>
               <div style={{ color: '#ffffff', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
                 <MapPin size={16} color="#00f0ff" />
-                <span>{university.cityRu}, Южная Корея ({university.nativeName})</span>
+                <span>{cityName}, {t.southKorea || 'South Korea'} ({university.nativeName})</span>
               </div>
             </div>
           </div>
@@ -141,7 +151,7 @@ export default function UniversityModal({ university, onClose, onApply }) {
           <div style={{ padding: '28px' }}>
             {/* Description */}
             <p style={{ color: isLight ? '#334155' : '#d1d5db', fontSize: '15px', lineHeight: 1.6, marginBottom: '24px', fontWeight: 500 }}>
-              {university.description}
+              {description}
             </p>
 
             {/* Grid Requirements */}
@@ -180,7 +190,7 @@ export default function UniversityModal({ university, onClose, onApply }) {
                 border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)'
               }}>
                 <div style={{ fontSize: '12px', color: isLight ? '#64748b' : '#9ca3af', marginBottom: '4px', fontWeight: 600 }}>{t.tuitionDetail}</div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: isLight ? '#d97706' : '#fbbf24' }}>${university.tuitionPerSemesterUSD} / семестр</div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: isLight ? '#d97706' : '#fbbf24' }}>${university.tuitionPerSemesterUSD} {t.perSemester || '/ semester'}</div>
               </div>
             </div>
 
@@ -214,10 +224,10 @@ export default function UniversityModal({ university, onClose, onApply }) {
             <div style={{ marginBottom: '32px' }}>
               <h4 style={{ fontSize: '16px', color: isLight ? '#0f172a' : '#fff', fontWeight: 800, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Award size={18} color={isLight ? '#d97706' : '#fbbf24'} />
-                <span>Особенности и Гранты:</span>
+                <span>{t.availableGrants || 'Features & Scholarships:'}</span>
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {university.features.map((feat, idx) => (
+                {features.map((feat, idx) => (
                   <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: isLight ? '#334155' : '#d1d5db', fontSize: '14px', fontWeight: 600 }}>
                     <CheckCircle2 size={18} color={isLight ? '#0284c7' : '#00f0ff'} />
                     <span>{feat}</span>

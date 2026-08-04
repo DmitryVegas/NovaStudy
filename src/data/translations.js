@@ -907,7 +907,20 @@ export const translations = {
       location: "위치",
       tuition: "학기당 등록금",
       topik: "요구 TOPIK",
-      grant: "최대 장학금"
+      grant: "최대 장학금",
+      btnDetails: "상세 정보 보기",
+      btnApply: "입학 상담 신청"
+    },
+    modal: {
+      topikReq: "TOPIK 요구 성적:",
+      ieltsReq: "IELTS 요구 성적:",
+      popularMajors: "인기 학과 및 전공:",
+      availableGrants: "대학 특징 및 장학 혜택:",
+      dorms: "기숙사 시설:",
+      tuitionDetail: "학기당 등록금:",
+      perSemester: "/ 학기",
+      southKorea: "대한민국",
+      applyNow: "이 대학교 상담 신청하기"
     },
     calculator: {
       badge: "AI 기반 장학금 진단 솔루션",

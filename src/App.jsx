@@ -144,6 +144,7 @@ export default function App() {
       {/* University Detail Modal */}
       <UniversityModal
         university={selectedUniversity}
+        currentLang={currentLang}
         onClose={() => setSelectedUniversity(null)}
         onApply={(uni) => handleOpenConsultation(uni)}
       />
