@@ -25,15 +25,18 @@ export default function LoginModal({ isOpen, onClose, currentLang, onLoginSucces
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // LOCK BODY SCROLLING WHEN MODAL IS OPEN
+  // LOCK BODY & DOCUMENT SCROLLING WHEN MODAL IS OPEN (100% SCROLL LOCK)
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
   }, [isOpen]);
 

@@ -8,15 +8,18 @@ export default function UniversityModal({ university, onClose, onApply }) {
   const { theme } = useContext(ThemeContext);
   const isLight = theme === 'light';
 
-  // LOCK BODY SCROLLING WHEN MODAL IS OPEN (Request 2)
+  // LOCK BODY & DOCUMENT SCROLLING WHEN MODAL IS OPEN (100% SCROLL LOCK)
   useEffect(() => {
     if (university) {
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
   }, [university]);
 
