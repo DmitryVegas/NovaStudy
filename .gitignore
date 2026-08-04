@@ -23,7 +23,16 @@ dist-ssr
 *.sln
 *.sw?
 
-# Database & SSH keys
-server_db_*.json
-ssh-key-*.key
+# Security & Secrets
+*.key
+*.pem
+*.pub
+*.id_rsa
+*.id_ed25519
+*.crt
+.env
+.env.*
+ssh-key-*
 
+# Database files
+server_db_*.json
