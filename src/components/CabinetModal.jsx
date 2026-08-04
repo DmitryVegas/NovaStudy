@@ -29,16 +29,12 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  if (!isOpen || !currentUser) return null;
-  const t = translations[currentLang]?.cabinet || translations.ru.cabinet;
-  const tAuth = translations[currentLang]?.auth || translations.ru.auth;
-
-  const isSuperUser = currentUser.role === 'admin' || currentUser.role === 'staff';
-  const isMainAdmin = currentUser.username === 'DarkXAN' || currentUser.role === 'admin';
+  const isSuperUser = currentUser?.role === 'admin' || currentUser?.role === 'staff';
+  const isMainAdmin = currentUser?.username === 'DarkXAN' || currentUser?.role === 'admin';
 
   // Navigation Active Tab State
   const [activeTab, setActiveTab] = useState(() => {
-    if (currentUser.role === 'student') return 'status';
+    if (currentUser?.role === 'student') return 'status';
     return 'manage_students';
   });
 
@@ -87,11 +83,22 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
 
   // State for Editing Profile
   const [editProfile, setEditProfile] = useState({
-    name: currentUser.name || '',
-    phone: currentUser.phone || '',
-    passportNumber: currentUser.passportNumber || '',
-    targetUniversity: currentUser.targetUniversity || ''
+    name: currentUser?.name || '',
+    phone: currentUser?.phone || '',
+    passportNumber: currentUser?.passportNumber || '',
+    targetUniversity: currentUser?.targetUniversity || ''
   });
+
+  useEffect(() => {
+    if (currentUser) {
+      setEditProfile({
+        name: currentUser.name || '',
+        phone: currentUser.phone || '',
+        passportNumber: currentUser.passportNumber || '',
+        targetUniversity: currentUser.targetUniversity || ''
+      });
+    }
+  }, [currentUser]);
 
   // State for Creating User (Admin/Staff)
   const [newUser, setNewUser] = useState({
@@ -216,6 +223,10 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
     alert(`Статус успешно обновлен для ${selectedStudentIds.length} выбранных студентов!`);
     setSelectedStudentIds([]);
   };
+
+  if (!isOpen || !currentUser) return null;
+  const t = translations[currentLang]?.cabinet || translations.ru.cabinet;
+  const tAuth = translations[currentLang]?.auth || translations.ru.auth;
 
   return (
     <AnimatePresence>
