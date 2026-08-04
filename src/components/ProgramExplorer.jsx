@@ -186,9 +186,10 @@ export default function ProgramExplorer({ currentLang, onSelectUniversity, onOpe
               <motion.div
                 key={uni.id}
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                whileHover={{ y: -6 }}
                 transition={{ duration: 0.3 }}
                 className="glass-card"
                 style={{
@@ -196,31 +197,53 @@ export default function ProgramExplorer({ currentLang, onSelectUniversity, onOpe
                   flexDirection: 'column',
                   height: '100%',
                   overflow: 'hidden',
-                  borderRadius: '20px'
+                  borderRadius: '24px',
+                  position: 'relative',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.25)'
                 }}
               >
-                {/* Header */}
+                {/* Top HD Campus Image Banner */}
                 <div
                   style={{
-                    padding: '20px 20px 16px 20px',
-                    borderBottom: '1px solid rgba(148, 163, 184, 0.15)',
+                    height: '190px',
+                    position: 'relative',
+                    backgroundImage: `url(${uni.image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '12px'
+                    justifyContent: 'space-between',
+                    padding: '16px'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {/* Dark Gradient Overlay for perfect text contrast */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0.95) 100%)',
+                      zIndex: 1
+                    }}
+                  />
+
+                  {/* Badges Overlay Bar */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
                     {/* Rank Badge */}
                     <div
                       style={{
-                        padding: '4px 12px',
+                        padding: '6px 12px',
                         borderRadius: '20px',
                         fontSize: '12px',
-                        fontWeight: 700,
-                        border: '1px solid rgba(2, 132, 199, 0.3)',
+                        fontWeight: 800,
+                        background: 'rgba(15, 23, 42, 0.8)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.25)',
+                        color: '#ffffff',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px'
+                        gap: '6px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
                       }}
                     >
                       <span style={{ fontSize: '14px' }}>{uni.logo}</span>
@@ -232,34 +255,39 @@ export default function ProgramExplorer({ currentLang, onSelectUniversity, onOpe
                       style={{
                         background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                         color: '#ffffff',
-                        padding: '4px 10px',
+                        padding: '5px 12px',
                         borderRadius: '14px',
                         fontSize: '11px',
-                        fontWeight: 800
+                        fontWeight: 800,
+                        boxShadow: '0 4px 14px rgba(245, 158, 11, 0.4)'
                       }}
                     >
                       {tCard.grant} {uni.maxGrantPercentage}%
                     </div>
                   </div>
-                </div>
 
-                {/* Content */}
-                <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                  <div>
-                    <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px' }} className="card-title">
+                  {/* University Name & City Banner Bottom Overlay */}
+                  <div style={{ zIndex: 2 }}>
+                    <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#ffffff', textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)', marginBottom: '2px' }}>
                       {uni.name}
                     </h3>
-                    <div style={{ fontSize: '13px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }} className="card-desc">
-                      <MapPin size={14} color="#0284c7" />
-                      <span>{uni.cityRu} ({uni.nativeName})</span>
+                    <div style={{ fontSize: '12px', color: '#93c5fd', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin size={13} color="#60a5fa" />
+                      <span>{currentLang === 'ru' ? uni.cityRu : uni.city} ({uni.nativeName})</span>
                     </div>
+                  </div>
+                </div>
 
+                {/* Content Body */}
+                <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
                     {/* Stats Grid */}
                     <div
                       style={{
-                        background: 'rgba(148, 163, 184, 0.08)',
-                        borderRadius: '12px',
-                        padding: '12px',
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '14px',
+                        padding: '12px 14px',
                         display: 'grid',
                         gridTemplateColumns: '1fr 1fr',
                         gap: '10px',
@@ -267,34 +295,40 @@ export default function ProgramExplorer({ currentLang, onSelectUniversity, onOpe
                       }}
                     >
                       <div>
-                        <div style={{ fontSize: '11px', textTransform: 'uppercase' }} className="card-desc">{tCard.tuition}</div>
-                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#2563eb' }}>${uni.tuitionPerSemesterUSD}</div>
+                        <div style={{ fontSize: '11px', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 700 }}>{tCard.tuition}</div>
+                        <div style={{ fontSize: '15px', fontWeight: 800, color: '#38bdf8', marginTop: '2px' }}>${uni.tuitionPerSemesterUSD}</div>
                       </div>
                       <div>
-                        <div style={{ fontSize: '11px', textTransform: 'uppercase' }} className="card-desc">{tCard.topik}</div>
-                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#0284c7' }}>{uni.topikReq}</div>
+                        <div style={{ fontSize: '11px', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 700 }}>{tCard.topik}</div>
+                        <div style={{ fontSize: '15px', fontWeight: 800, color: '#60a5fa', marginTop: '2px' }}>{uni.topikReq}</div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Actions - Clean Single Button */}
-                  <div style={{ marginTop: '10px' }}>
+                  {/* Actions Button */}
+                  <div style={{ marginTop: 'auto' }}>
                     <button
                       onClick={() => onSelectUniversity(uni)}
                       style={{
                         width: '100%',
                         padding: '12px',
                         fontSize: '13px',
-                        fontWeight: 700,
-                        borderRadius: '9999px',
-                        border: '1px solid rgba(148, 163, 184, 0.3)',
-                        background: 'transparent',
+                        fontWeight: 800,
+                        borderRadius: '14px',
+                        border: '1px solid rgba(37, 99, 235, 0.4)',
+                        background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(29, 78, 216, 0.25) 100%)',
+                        color: '#60a5fa',
                         cursor: 'pointer',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
                       }}
-                      className="card-title"
                     >
-                      {tCard.btnDetails}
+                      <span>{tCard.btnDetails}</span>
+                      <ChevronRight size={15} />
                     </button>
                   </div>
                 </div>
