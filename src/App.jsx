@@ -126,7 +126,6 @@ export default function App() {
       <Footer
         currentLang={currentLang}
         onOpenConsultation={() => handleOpenConsultation()}
-        onOpenLeads={() => setIsLeadsOpen(true)}
       />
 
       {/* Floating Action Buttons */}

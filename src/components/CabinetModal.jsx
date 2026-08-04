@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, User, Shield, GraduationCap, CheckCircle2, Clock, Upload, FileText, Download,
   UserPlus, LogOut, Phone, MapPin, Key, Trash2, Edit3, Sparkles, BookOpen, Layers,
-  Search, CheckSquare, Square, RefreshCw, Filter, AlertTriangle, Users
+  Search, CheckSquare, Square, RefreshCw, Filter, AlertTriangle, Users, Calendar
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
@@ -29,27 +29,90 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const [activeTab, setActiveTab] = useState('status'); // status, profile, docs, manage_students, create_account
-  const [passportSearch, setPassportSearch] = useState('');
+  if (!isOpen || !currentUser) return null;
+  const t = translations[currentLang]?.cabinet || translations.ru.cabinet;
+  const tAuth = translations[currentLang]?.auth || translations.ru.auth;
+
+  const isSuperUser = currentUser.role === 'admin' || currentUser.role === 'staff';
+  const isMainAdmin = currentUser.username === 'DarkXAN' || currentUser.role === 'admin';
+
+  // Navigation Active Tab State
+  const [activeTab, setActiveTab] = useState(() => {
+    if (currentUser.role === 'student') return 'status';
+    return 'manage_students';
+  });
+
+  // Client Leads Database State (For Admin & Staff)
+  const [leads, setLeads] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      try {
+        const stored = localStorage.getItem('nova_study_leads');
+        if (stored) setLeads(JSON.parse(stored));
+      } catch (e) {
+        setLeads([]);
+      }
+    }
+  }, [isOpen]);
+
+  const handleClearLeads = () => {
+    if (window.confirm('Вы уверены, что хотите очистить весь список заявок?')) {
+      localStorage.removeItem('nova_study_leads');
+      setLeads([]);
+    }
+  };
+
+  const handleDeleteSingleLead = (indexToDelete) => {
+    if (window.confirm('Удалить эту заявку клиента?')) {
+      const updated = leads.filter((_, idx) => idx !== indexToDelete);
+      setLeads(updated);
+      localStorage.setItem('nova_study_leads', JSON.stringify(updated));
+    }
+  };
+
+  const handleExportLeadsCSV = () => {
+    if (leads.length === 0) return;
+    let csv = 'Имя,Телефон,Программа,Год,Мессенджер,ВУЗ,Дата\n';
+    leads.forEach((l) => {
+      csv += `"${l.name}","${l.phone}","${l.program}","${l.year}","${l.messenger || ''}","${l.university || ''}","${l.createdAt}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NovaStudy_Leads_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+  };
+
+  // State for Editing Profile
+  const [editProfile, setEditProfile] = useState({
+    name: currentUser.name || '',
+    phone: currentUser.phone || '',
+    passportNumber: currentUser.passportNumber || '',
+    targetUniversity: currentUser.targetUniversity || ''
+  });
+
+  // State for Creating User (Admin/Staff)
+  const [newUser, setNewUser] = useState({
+    username: '',
+    password: '',
+    name: '',
+    role: 'student',
+    phone: '',
+    passportNumber: '',
+    targetUniversity: ''
+  });
+
+  // State for Admin Search & Filter
+  const [searchPassport, setSearchPassport] = useState('');
+  const [selectedStageFilter, setSelectedStageFilter] = useState('all');
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState('all'); // 'all', 'students', 'staff'
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
   const [bulkStage, setBulkStage] = useState(0);
   const [bulkFeePaid, setBulkFeePaid] = useState(false);
-  const [filterStage, setFilterStage] = useState('all'); // Quick Stage Filter for staff/admin
 
-  // User Accounts Search & Role Filter
-  const [userAccountSearch, setUserAccountSearch] = useState('');
-  const [userAccountRoleFilter, setUserAccountRoleFilter] = useState('all'); // 'all', 'student', 'staff'
-
-  // Priority Delete Confirmation Modal State
-  const [deleteConfirm, setDeleteConfirm] = useState({
-    isOpen: false,
-    type: 'doc', // 'doc' or 'student' or 'user'
-    title: '',
-    itemName: '',
-    onConfirm: null
-  });
-
-  // LOCK BODY SCROLLING WHEN MODAL IS OPEN
+  // LOCK BODY SCROLLING WHEN CABINET IS OPEN
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -61,228 +124,75 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
     };
   }, [isOpen]);
 
-  // ESC Key Listener: Close modal only via X button, ESC key, or Logout
+  // ESC Key Listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        if (deleteConfirm.isOpen) {
-          setDeleteConfirm({ isOpen: false, type: 'doc', title: '', itemName: '', onConfirm: null });
-        } else {
-          onClose();
-        }
-      }
+      if (e.key === 'Escape') onClose();
     };
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, deleteConfirm.isOpen, onClose]);
+  }, [isOpen, onClose]);
 
-  // New Account Form State
-  const [newAcc, setNewAcc] = useState({
-    username: '',
-    password: '',
-    name: '',
-    role: 'student',
-    phone: '',
-    university: 'Seoul National University',
-    program: 'bachelor',
-    passport: ''
-  });
-
-  // Profile Edit State
-  const [editProfile, setEditProfile] = useState({
-    name: '',
-    phone: '',
-    passport: '',
-    university: '',
-    program: ''
-  });
-
-  // Keep Profile form inputs synchronized whenever currentUser updates/logs in
-  useEffect(() => {
-    if (currentUser) {
-      setEditProfile({
-        name: currentUser.name || '',
-        phone: currentUser.phone || '',
-        passport: currentUser.passport || '',
-        university: currentUser.university || '',
-        program: currentUser.program || ''
-      });
-    }
-  }, [currentUser]);
-
-  if (!isOpen || !currentUser) return null;
-  const t = translations[currentLang]?.cabinet || translations.ru.cabinet;
-  const tAuth = translations[currentLang]?.auth || translations.ru.auth;
-
-  const stageOptions = t.statusSteps.map((step, idx) => ({
-    value: idx,
-    label: step.title
-  }));
-
-  const roleOptions = [
-    { value: 'student', label: t.studentRoleOpt },
-    ...(currentUser.role === 'admin' ? [{ value: 'staff', label: t.staffRoleOpt }] : [])
-  ];
-
-  const isSuperUser = currentUser.role === 'admin' || currentUser.role === 'staff';
-  const rawStudentsList = users.filter((u) => u.role === 'student');
-
-  // Filter stage dropdown options with real student counts
-  const stageFilterOptions = [
-    { value: 'all', label: `Все этапы (${rawStudentsList.length})` },
-    ...t.statusSteps.map((step, idx) => {
-      const count = rawStudentsList.filter((s) => s.statusStage === idx).length;
-      return {
-        value: String(idx),
-        label: `${step.title} (${count})`
-      };
-    })
-  ];
-
-  // Trigger Document Delete Confirmation Modal
-  const promptDeleteDocument = (studentId, docId, docName) => {
-    setDeleteConfirm({
-      isOpen: true,
-      type: 'doc',
-      title: 'Удаление файла',
-      itemName: docName || 'Документ',
-      onConfirm: () => {
-        deleteUserDoc(studentId, docId);
-        setDeleteConfirm({ isOpen: false, type: 'doc', title: '', itemName: '', onConfirm: null });
-      }
-    });
-  };
-
-  // Trigger Student/Staff Profile Delete Confirmation Modal
-  const promptDeleteUser = (userId, userName) => {
-    setDeleteConfirm({
-      isOpen: true,
-      type: 'user',
-      title: 'Удаление профиля',
-      itemName: userName || 'Пользователь',
-      onConfirm: () => {
-        deleteUser(userId);
-        setDeleteConfirm({ isOpen: false, type: 'user', title: '', itemName: '', onConfirm: null });
-      }
-    });
-  };
-
-  // Handle File Upload for Student
-  const handleFileUpload = (e, studentId) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      uploadUserDoc(studentId, {
-        name: file.name,
-        dataUrl: reader.result,
-        type: file.type
-      });
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Handle Replace Document File
-  const handleFileReplace = (e, studentId, docId) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      replaceUserDoc(studentId, docId, {
-        name: file.name,
-        dataUrl: reader.result,
-        type: file.type
-      });
-      alert(`Документ успешно заменен на "${file.name}"!`);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Handle Create User
-  const handleCreateUserSubmit = async (e) => {
-    e.preventDefault();
-    if (!newAcc.username || !newAcc.password) return;
-
-    await createUser(newAcc);
-    alert(`Профиль "${newAcc.name || newAcc.username}" успешно создан и сохранен в Базу Данных!`);
-    setNewAcc({
-      username: '',
-      password: '',
-      name: '',
-      role: 'student',
-      phone: '',
-      university: 'Seoul National University',
-      program: 'bachelor',
-      passport: ''
-    });
-  };
-
-  // Handle Profile Update
+  // Handle Save Profile
   const handleSaveProfile = (e) => {
     e.preventDefault();
     updateUserProfile(currentUser.id, editProfile);
     alert('Профиль успешно обновлен!');
   };
 
-  // Smart Filter: Passport search + Stage filter for Students tab
-  const filteredStudents = rawStudentsList.filter((st) => {
-    if (filterStage !== 'all' && st.statusStage !== Number(filterStage)) {
-      return false;
+  // Handle Create User Submit
+  const handleCreateUserSubmit = (e) => {
+    e.preventDefault();
+    if (!newUser.username || !newUser.password) {
+      alert('Логин и пароль обязательны!');
+      return;
+    }
+    const res = createUser(newUser);
+    if (res.success) {
+      alert(`Пользователь ${newUser.username} успешно создан!`);
+      setNewUser({
+        username: '',
+        password: '',
+        name: '',
+        role: 'student',
+        phone: '',
+        passportNumber: '',
+        targetUniversity: ''
+      });
+      setActiveTab('manage_students');
+    } else {
+      alert(res.error || 'Ошибка при создании пользователя');
+    }
+  };
+
+  // Handle Document Upload
+  const handleFileUpload = (e, targetUserId = currentUser.id) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      alert('Пожалуйста, загрузите документ только в формате PDF!');
+      return;
     }
 
-    if (!passportSearch) return true;
-    const query = passportSearch.toLowerCase().trim();
-    const queryDigits = query.replace(/\D/g, '');
+    const reader = new FileReader();
+    reader.onload = () => {
+      const docObj = {
+        id: Date.now().toString(),
+        name: file.name,
+        size: (file.size / 1024).toFixed(1) + ' KB',
+        date: new Date().toLocaleDateString(),
+        dataUrl: reader.result
+      };
+      uploadUserDoc(targetUserId, docObj);
+    };
+    reader.readAsDataURL(file);
+  };
 
-    const passportMatch = st.passport && st.passport.toLowerCase().includes(query);
-    const nameMatch = st.name && st.name.toLowerCase().includes(query);
-    const usernameMatch = st.username && String(st.username).toLowerCase().includes(query);
-    const phoneMatch = st.phone && st.phone.includes(query);
-
-    let phoneDigitsMatch = false;
-    if (queryDigits.length >= 2 && st.phone) {
-      const stPhoneDigits = st.phone.replace(/\D/g, '');
-      phoneDigitsMatch = stPhoneDigits.includes(queryDigits);
-    }
-
-    if (/^[a-zA-Z]{2}/.test(query)) {
-      return passportMatch;
-    }
-
-    return passportMatch || nameMatch || usernameMatch || phoneMatch || phoneDigitsMatch;
-  });
-
-  // Smart Filter: Name + Partial Phone Digits (2-4 combination) + Role Filter for User Management Tab
-  const filteredAccountUsers = users.filter((u) => {
-    // Role Filter
-    if (userAccountRoleFilter === 'student' && u.role !== 'student') return false;
-    if (userAccountRoleFilter === 'staff' && u.role !== 'staff') return false;
-
-    if (!userAccountSearch) return true;
-    const query = userAccountSearch.toLowerCase().trim();
-    const queryDigits = query.replace(/\D/g, '');
-
-    const nameMatch = u.name && u.name.toLowerCase().includes(query);
-    const usernameMatch = u.username && String(u.username).toLowerCase().includes(query);
-    const passportMatch = u.passport && u.passport.toLowerCase().includes(query);
-    const phoneMatch = u.phone && u.phone.includes(query);
-
-    // Partial phone digit matching for 2, 3, 4 digit combinations (e.g. 77, 998, 555)
-    let phoneDigitsMatch = false;
-    if (queryDigits.length >= 2 && u.phone) {
-      const uPhoneDigits = u.phone.replace(/\D/g, '');
-      phoneDigitsMatch = uPhoneDigits.includes(queryDigits);
-    }
-
-    return nameMatch || usernameMatch || passportMatch || phoneMatch || phoneDigitsMatch;
-  });
-
-  // Toggle Single Selection
-  const toggleStudentSelect = (id) => {
+  // Toggle Single Student Selection for Bulk Actions
+  const toggleSelectStudent = (id) => {
     if (selectedStudentIds.includes(id)) {
       setSelectedStudentIds(selectedStudentIds.filter((item) => item !== id));
     } else {
@@ -290,12 +200,12 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
     }
   };
 
-  // Select All Students
-  const toggleSelectAll = () => {
-    if (selectedStudentIds.length === filteredStudents.length) {
+  // Toggle Select All Filtered Students
+  const toggleSelectAll = (filteredList) => {
+    if (selectedStudentIds.length === filteredList.length) {
       setSelectedStudentIds([]);
     } else {
-      setSelectedStudentIds(filteredStudents.map((st) => st.id));
+      setSelectedStudentIds(filteredList.map((s) => s.id));
     }
   };
 
@@ -401,7 +311,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  paddingRight: isMobile ? '48px' : '16px' // reserve space for close button
+                  paddingRight: isMobile ? '48px' : '16px'
                 }}
               >
                 <div>
@@ -455,7 +365,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   display: 'flex',
                   flexDirection: isMobile ? 'row' : 'column',
                   overflowX: isMobile ? 'auto' : 'visible',
-                  gap: isMobile ? '8px' : '8px',
+                  gap: '8px',
                   WebkitOverflowScrolling: 'touch',
                   paddingBottom: isMobile ? '6px' : '0'
                 }}
@@ -558,6 +468,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   </>
                 )}
 
+                {/* Tabs for Admin and Staff (isSuperUser) */}
                 {isSuperUser && (
                   <>
                     <button
@@ -589,6 +500,38 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                     >
                       <GraduationCap size={isMobile ? 16 : 18} />
                       <span>{t.tabStudents}</span>
+                    </button>
+
+                    {/* Dedicated Client Leads Tab for Admin & Staff */}
+                    <button
+                      onClick={() => setActiveTab('leads')}
+                      className="cabinet-tab-btn"
+                      style={{
+                        padding: isMobile ? '10px 14px' : '12px 16px',
+                        borderRadius: '12px',
+                        background: activeTab === 'leads'
+                          ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
+                          : (isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.08)'),
+                        color: activeTab === 'leads'
+                          ? '#ffffff'
+                          : (isLight ? '#0f172a' : '#ffffff'),
+                        border: activeTab === 'leads'
+                          ? 'none'
+                          : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)'),
+                        textAlign: 'left',
+                        fontWeight: 800,
+                        fontSize: isMobile ? '13px' : '14px',
+                        whiteSpace: isMobile ? 'nowrap' : 'normal',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        flexShrink: 0,
+                        boxShadow: activeTab === 'leads' ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none'
+                      }}
+                    >
+                      <Users size={isMobile ? 16 : 18} />
+                      <span>Заявки клиентов ({leads.length})</span>
                     </button>
 
                     <button
@@ -655,7 +598,7 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
             )}
           </div>
 
-          {/* Main Content Area - Strictly OverflowX Hidden to block horizontal scrollbar */}
+          {/* Main Content Area */}
           <div
             className="cabinet-main-content"
             style={{
@@ -699,889 +642,415 @@ export default function CabinetModal({ isOpen, onClose, currentLang }) {
                   <div>
                     <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', marginBottom: '4px', fontWeight: 600 }}>{t.phoneLabel}</label>
                     <input
-                      type="text"
+                      type="tel"
                       value={editProfile.phone}
                       onChange={(e) => setEditProfile({ ...editProfile, phone: e.target.value })}
                       style={{ width: '100%', padding: '12px', borderRadius: '12px' }}
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', marginBottom: '4px', fontWeight: 600 }}>{t.passportLabel}</label>
+                    <label style={{ display: 'block', fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', marginBottom: '4px', fontWeight: 600 }}>Номер Паспорта</label>
                     <input
                       type="text"
-                      placeholder="AA12345678"
-                      value={editProfile.passport}
-                      onChange={(e) => setEditProfile({ ...editProfile, passport: e.target.value })}
+                      value={editProfile.passportNumber}
+                      onChange={(e) => setEditProfile({ ...editProfile, passportNumber: e.target.value })}
                       style={{ width: '100%', padding: '12px', borderRadius: '12px' }}
                     />
                   </div>
-                  <button type="submit" style={{
-                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                    color: '#fff',
-                    fontWeight: 700,
-                    borderRadius: '12px',
-                    padding: '14px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}>
-                    {t.btnSaveProfile}
+                  <button
+                    type="submit"
+                    style={{
+                      padding: '12px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      fontWeight: 800,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Сохранить изменения
                   </button>
                 </form>
               </div>
             )}
 
-            {/* Admin / Staff: Manage Students & Visas */}
-            {isSuperUser && (activeTab === 'manage_students' || activeTab === 'status') && (
+            {/* Student Documents View */}
+            {currentUser.role === 'student' && activeTab === 'docs' && (
               <div>
                 <h3 style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '16px' }}>
-                  {t.manageTitle}
+                  {t.tabDocs}
                 </h3>
 
-                {/* Passport, Name & Phone Search Bar + Stage Filter Dropdown + Select All */}
-                <div style={{ marginBottom: '20px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', alignItems: 'center' }}>
-                  {/* Text & Partial Phone Search Input */}
-                  <div style={{ position: 'relative' }}>
-                    <Search size={18} color={isLight ? '#3b82f6' : '#60a5fa'} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-                    <input
-                      type="text"
-                      placeholder={t.searchPassportPlaceholder || "Поиск по Номеру Паспорта, Имени или Телефону..."}
-                      value={passportSearch}
-                      onChange={(e) => setPassportSearch(e.target.value)}
-                      style={{
-                        width: '100%',
-                        borderRadius: '12px',
-                        padding: '12px 16px 12px 44px',
-                        fontSize: '13px',
-                        outline: 'none',
-                        background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
-                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                        color: isLight ? '#0f172a' : '#fff'
-                      }}
-                    />
+                {(!currentUser.documents || currentUser.documents.length === 0) ? (
+                  <div style={{ padding: '30px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af', background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.03)', borderRadius: '16px' }}>
+                    <FileText size={36} style={{ marginBottom: '8px' }} />
+                    <p style={{ fontWeight: 600 }}>Прикрепленных документов пока нет</p>
+                    <p style={{ fontSize: '13px', color: isLight ? '#94a3b8' : '#6b7280', marginTop: '4px' }}>
+                      Ваш персональный менеджер Nova Study прикрепит визу и контракты после оформления!
+                    </p>
                   </div>
-
-                  {/* Clean Animated Stage Filter Dropdown */}
-                  <div>
-                    <CustomSelect
-                      options={stageFilterOptions}
-                      value={filterStage}
-                      onChange={(val) => setFilterStage(val)}
-                    />
-                  </div>
-
-                  {/* Select All Button */}
-                  {filteredStudents.length > 0 && (
-                    <button
-                      onClick={toggleSelectAll}
-                      style={{
-                        background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.06)',
-                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                        color: isLight ? '#0f172a' : '#fff',
-                        padding: '12px 18px',
-                        borderRadius: '12px',
-                        fontWeight: 700,
-                        fontSize: '13px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      {selectedStudentIds.length === filteredStudents.length ? <CheckSquare size={16} color="#3b82f6" /> : <Square size={16} />}
-                      <span>{t.selectAll} ({filteredStudents.length})</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Bulk Action Bar */}
-                {selectedStudentIds.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    style={{
-                      background: isLight ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.04) 100%)' : 'rgba(255, 255, 255, 0.04)',
-                      border: isLight ? '1px solid rgba(37, 99, 235, 0.25)' : '1px solid rgba(255, 255, 255, 0.12)',
-                      borderRadius: '16px',
-                      padding: isMobile ? '14px' : '18px 20px',
-                      marginBottom: '20px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '12px'
-                    }}
-                  >
-                    <div style={{ fontSize: '14px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff' }}>
-                      {t.selectedCount} <span style={{ color: '#3b82f6' }}>{selectedStudentIds.length}</span>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
-                      <CustomSelect
-                        options={stageOptions}
-                        value={bulkStage}
-                        onChange={(val) => setBulkStage(Number(val))}
-                        style={{ width: isMobile ? '100%' : '220px' }}
-                      />
-
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: isLight ? '#0f172a' : '#fff', fontSize: '13px', fontWeight: 600 }}>
-                        <input
-                          type="checkbox"
-                          checked={bulkFeePaid}
-                          onChange={(e) => setBulkFeePaid(e.target.checked)}
-                          style={{ accentColor: '#2563eb', width: '16px', height: '16px', cursor: 'pointer' }}
-                        />
-                        <span>{t.feePaidLabel}</span>
-                      </label>
-
-                      <button
-                        onClick={handleApplyBulkUpdate}
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {currentUser.documents.map((doc) => (
+                      <div
+                        key={doc.id}
                         style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '14px 18px',
+                          background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.04)',
+                          border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '14px'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <FileText size={22} color="#2563eb" />
+                          <div>
+                            <div style={{ fontWeight: 800, fontSize: '14px' }}>{doc.name}</div>
+                            <div style={{ fontSize: '12px', color: isLight ? '#64748b' : '#9ca3af' }}>{doc.size} • {doc.date}</div>
+                          </div>
+                        </div>
+
+                        <a
+                          href={doc.dataUrl}
+                          download={doc.name}
+                          style={{
+                            padding: '8px 14px',
+                            borderRadius: '10px',
+                            background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                            color: '#fff',
+                            textDecoration: 'none',
+                            fontWeight: 700,
+                            fontSize: '13px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <Download size={14} />
+                          <span>Скачать PDF</span>
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Client Leads View (For Admin & Staff) */}
+            {isSuperUser && activeTab === 'leads' && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <h3 style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '4px' }}>
+                      База Заявок Клиентов
+                    </h3>
+                    <p style={{ fontSize: '13px', color: isLight ? '#64748b' : '#9ca3af' }}>
+                      Всего поступило заявок: <strong style={{ color: '#2563eb' }}>{leads.length}</strong>
+                    </p>
+                  </div>
+
+                  {leads.length > 0 && (
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        onClick={handleExportLeadsCSV}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '12px',
                           background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                          color: '#fff',
+                          color: '#ffffff',
                           border: 'none',
-                          borderRadius: '10px',
-                          padding: '10px 18px',
-                          fontWeight: 700,
+                          fontWeight: 800,
                           fontSize: '13px',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
                           gap: '6px',
-                          width: isMobile ? '100%' : 'auto'
+                          boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
                         }}
                       >
-                        <Sparkles size={15} />
-                        <span>{t.applyBulk}</span>
+                        <Download size={15} />
+                        <span>Скачать CSV / Excel</span>
+                      </button>
+
+                      <button
+                        onClick={handleClearLeads}
+                        style={{
+                          padding: '8px 14px',
+                          borderRadius: '12px',
+                          background: 'rgba(244, 63, 94, 0.15)',
+                          border: '1px solid rgba(244, 63, 94, 0.3)',
+                          color: '#f43f5e',
+                          fontWeight: 800,
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                        title="Очистить все заявки"
+                      >
+                        <Trash2 size={15} />
                       </button>
                     </div>
-                  </motion.div>
+                  )}
+                </div>
+
+                {leads.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '60px 20px', color: isLight ? '#64748b' : '#9ca3af' }}>
+                    <Clock size={44} color={isLight ? '#94a3b8' : '#6b7280'} style={{ marginBottom: '12px' }} />
+                    <p style={{ fontSize: '16px', fontWeight: 700 }}>Заявок клиентов пока нет</p>
+                    <p style={{ fontSize: '13px', color: isLight ? '#94a3b8' : '#6b7280', marginTop: '4px' }}>
+                      Когда посетители заполняют форму записи на консультацию на сайте, поступившие заявки отображаются здесь!
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {leads.map((lead, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.03)',
+                          border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.08)',
+                          borderRadius: '16px',
+                          padding: '16px 20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          flexWrap: 'wrap',
+                          gap: '14px',
+                          boxShadow: isLight ? '0 2px 8px rgba(0, 0, 0, 0.02)' : 'none'
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: '16px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span>{lead.name}</span>
+                            <span style={{ fontSize: '11px', background: isLight ? 'rgba(37, 99, 235, 0.1)' : 'rgba(37, 99, 235, 0.2)', color: isLight ? '#2563eb' : '#60a5fa', padding: '2px 8px', borderRadius: '8px', fontWeight: 800 }}>
+                              {(lead.program || 'УНИВЕРСИТЕТ').toUpperCase()}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '16px', marginTop: '6px', fontSize: '13px', color: isLight ? '#475569' : '#cbd5e1', flexWrap: 'wrap' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Phone size={14} color="#2563eb" />
+                              <a href={`tel:${lead.phone}`} style={{ color: isLight ? '#2563eb' : '#60a5fa', textDecoration: 'none', fontWeight: 700 }}>{lead.phone}</a>
+                            </span>
+                            {lead.university && (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#d97706', fontWeight: 700 }}>
+                                <BookOpen size={14} />
+                                <span>{lead.university}</span>
+                              </span>
+                            )}
+                            {lead.messenger && (
+                              <span style={{ color: isLight ? '#64748b' : '#9ca3af' }}>@{lead.messenger.replace('@', '')}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          <div style={{ textAlign: 'right', fontSize: '12px', color: isLight ? '#64748b' : '#6b7280' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Calendar size={12} />
+                              <span>{lead.createdAt}</span>
+                            </div>
+                            <div style={{ color: '#10b981', fontWeight: 800, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
+                              <CheckCircle2 size={12} /> Новая заявка
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => handleDeleteSingleLead(idx)}
+                            style={{
+                              background: 'rgba(244, 63, 94, 0.1)',
+                              border: '1px solid rgba(244, 63, 94, 0.25)',
+                              color: '#f43f5e',
+                              borderRadius: '10px',
+                              padding: '8px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                            title="Удалить заявку"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Admin Management Views for Students & Accounts */}
+            {isSuperUser && activeTab === 'manage_students' && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                  <h3 style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff' }}>
+                    {t.manageTitle}
+                  </h3>
+                </div>
+
+                {/* Filter & Search Bar */}
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                  <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
+                    <Search size={16} color="#2563eb" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input
+                      type="text"
+                      placeholder={t.searchPassportPlaceholder}
+                      value={searchPassport}
+                      onChange={(e) => setSearchPassport(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px 10px 36px', borderRadius: '10px', fontSize: '13px' }}
+                    />
+                  </div>
+
+                  <div style={{ minWidth: '150px' }}>
+                    <CustomSelect
+                      value={selectedStageFilter}
+                      onChange={(e) => setSelectedStageFilter(e.target.value)}
+                      options={[
+                        { value: 'all', label: 'Все этапы поступления' },
+                        ...translations[currentLang].cabinet.statusSteps.map((step, idx) => ({
+                          value: idx.toString(),
+                          label: `${idx + 1}. ${step.title}`
+                        }))
+                      ]}
+                    />
+                  </div>
+                </div>
+
+                {/* Bulk Actions Panel */}
+                {selectedStudentIds.length > 0 && (
+                  <div style={{ padding: '14px 18px', background: 'rgba(37, 99, 235, 0.1)', border: '1px solid rgba(37, 99, 235, 0.3)', borderRadius: '14px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                    <span style={{ fontWeight: 800, fontSize: '14px', color: isLight ? '#2563eb' : '#60a5fa' }}>
+                      {t.selectedCount} {selectedStudentIds.length}
+                    </span>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <CustomSelect
+                        value={bulkStage}
+                        onChange={(e) => setBulkStage(e.target.value)}
+                        options={translations[currentLang].cabinet.statusSteps.map((step, idx) => ({
+                          value: idx.toString(),
+                          label: `${idx + 1}. ${step.title}`
+                        }))}
+                      />
+                      <button
+                        onClick={handleApplyBulkUpdate}
+                        style={{ padding: '8px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', color: '#fff', border: 'none', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }}
+                      >
+                        {t.applyBulk}
+                      </button>
+                    </div>
+                  </div>
                 )}
 
-                {/* Filtered Students List with Clean Non-Overflow Animations */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', overflowX: 'hidden' }}>
-                  <AnimatePresence>
-                    {filteredStudents.length === 0 ? (
-                      <motion.div
-                        key="no-students-empty"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        style={{ padding: '30px 16px', background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.02)', borderRadius: '16px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af', fontSize: '13px' }}
-                      >
-                        {t.noStudents}
-                      </motion.div>
-                    ) : (
-                      filteredStudents.map((st) => {
-                        const isSelected = selectedStudentIds.includes(st.id);
-                        const canDeleteStudent = currentUser.role === 'admin' || currentUser.role === 'staff';
+                {/* Students List */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {users.filter(u => u.role === 'student').map((student) => (
+                    <div key={student.id} style={{ padding: '20px', background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.03)', border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <input
+                            type="checkbox"
+                            checked={selectedStudentIds.includes(student.id)}
+                            onChange={() => toggleSelectStudent(student.id)}
+                            style={{ width: '16px', height: '16px', accentColor: '#2563eb', cursor: 'pointer' }}
+                          />
+                          <div style={{ fontWeight: 800, fontSize: '16px' }}>{student.name || student.username}</div>
+                          <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: 700 }}>Pass: {student.passportNumber || 'N/A'}</span>
+                        </div>
 
-                        return (
-                          <motion.div
-                            key={st.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2 }}
-                            style={{
-                              padding: isMobile ? '16px' : '24px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '14px',
-                              borderRadius: '18px',
-                              border: isSelected
-                                ? (isLight ? '2px solid #2563eb' : '1px solid #3b82f6')
-                                : (isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)'),
-                              background: isSelected
-                                ? (isLight ? 'rgba(37, 99, 235, 0.05)' : 'rgba(37, 99, 235, 0.06)')
-                                : (isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.02)'),
-                              boxShadow: isLight ? '0 10px 25px rgba(0, 0, 0, 0.04)' : 'none'
-                            }}
-                          >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
-                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                                <button
-                                  onClick={() => toggleStudentSelect(st.id)}
-                                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#3b82f6', marginTop: '2px' }}
-                                >
-                                  {isSelected ? <CheckSquare size={20} /> : <Square size={20} color="#94a3b8" />}
-                                </button>
+                        {/* Staff / Admin Delete Student Profile */}
+                        <button
+                          onClick={() => deleteUser(student.id)}
+                          style={{ padding: '6px 12px', background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.3)', color: '#f43f5e', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <Trash2 size={13} />
+                          <span>{t.deleteBtn}</span>
+                        </button>
+                      </div>
 
-                                <div>
-                                  <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                    <span>{st.name || st.username}</span>
-                                    <span style={{
-                                      fontSize: '10px',
-                                      fontWeight: 700,
-                                      background: 'rgba(37, 99, 235, 0.15)',
-                                      color: isLight ? '#2563eb' : '#60a5fa',
-                                      padding: '2px 8px',
-                                      borderRadius: '6px'
-                                    }}>
-                                      {st.username}
-                                    </span>
-                                  </div>
-                                  <div style={{ fontSize: '12px', color: isLight ? '#475569' : '#cbd5e1', marginTop: '4px', display: 'flex', gap: '12px', flexWrap: 'wrap', fontWeight: 500 }}>
-                                    <span>🏛️ {st.university}</span>
-                                    {st.passport && <span style={{ color: isLight ? '#b45309' : '#fbbf24', fontWeight: 700 }}>Pass: {st.passport}</span>}
-                                    <span>📞 {st.phone || 'Не указан'}</span>
-                                  </div>
-                                </div>
-                              </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '4px', color: isLight ? '#64748b' : '#9ca3af' }}>{t.changeStageLabel}</label>
+                          <CustomSelect
+                            value={student.statusStage || 0}
+                            onChange={(e) => updateUserStatus(student.id, Number(e.target.value), student.feePaid)}
+                            options={translations[currentLang].cabinet.statusSteps.map((step, idx) => ({
+                              value: idx.toString(),
+                              label: `${idx + 1}. ${step.title}`
+                            }))}
+                          />
+                        </div>
 
-                              {canDeleteStudent && (
-                                <button
-                                  onClick={() => promptDeleteUser(st.id, st.name || st.username)}
-                                  style={{
-                                    background: 'rgba(244, 63, 94, 0.1)',
-                                    color: '#f43f5e',
-                                    border: '1px solid rgba(244, 63, 94, 0.25)',
-                                    padding: '6px 12px',
-                                    borderRadius: '8px',
-                                    cursor: 'pointer',
-                                    fontSize: '12px',
-                                    fontWeight: 600,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px'
-                                  }}
-                                >
-                                  <Trash2 size={13} />
-                                  <span>{t.deleteBtn}</span>
-                                </button>
-                              )}
-                            </div>
-
-                            {/* Individual Status Change & Serious Corporate Upload Button */}
-                            <div style={{
-                              background: isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.02)',
-                              border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)',
-                              padding: isMobile ? '12px' : '16px',
-                              borderRadius: '14px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '12px'
-                            }}>
-                              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', alignItems: 'center' }}>
-                                <div>
-                                  <label style={{ fontSize: '11px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t.changeStageLabel}</label>
-                                  <CustomSelect
-                                    options={stageOptions}
-                                    value={st.statusStage || 0}
-                                    onChange={(val) => updateUserStatus(st.id, Number(val), st.statusNote, st.feePaid)}
-                                  />
-                                </div>
-
-                                {/* SERIOUS & EXECUTIVE FILE UPLOAD BUTTON */}
-                                <div>
-                                  <label style={{ fontSize: '11px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t.attachDocLabel}</label>
-                                  <label
-                                    style={{
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      gap: '8px',
-                                      padding: '10px 14px',
-                                      width: isMobile ? '100%' : 'auto',
-                                      borderRadius: '10px',
-                                      background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.06)',
-                                      border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)',
-                                      color: isLight ? '#0f172a' : '#f3f4f6',
-                                      fontWeight: 600,
-                                      fontSize: '12px',
-                                      cursor: 'pointer',
-                                      transition: 'all 0.2s ease'
-                                    }}
-                                  >
-                                    <Upload size={15} color="#3b82f6" />
-                                    <span>Загрузить PDF / Файл</span>
-                                    <input
-                                      type="file"
-                                      accept=".pdf,.png,.jpg,.jpeg"
-                                      onChange={(e) => handleFileUpload(e, st.id)}
-                                      style={{ display: 'none' }}
-                                    />
-                                  </label>
-                                </div>
-                              </div>
-
-                              {/* Checkbox for Application Fee (Step 5) Confirmation */}
-                              <div style={{ borderTop: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '8px' }}>
-                                <label style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  cursor: 'pointer',
-                                  color: st.feePaid ? (isLight ? '#059669' : '#10b981') : (isLight ? '#d97706' : '#fbbf24'),
-                                  fontSize: '12px',
-                                  fontWeight: 700
-                                }}>
-                                  <input
-                                    type="checkbox"
-                                    checked={st.feePaid || false}
-                                    onChange={(e) => updateUserStatus(st.id, st.statusStage || 0, st.statusNote, e.target.checked)}
-                                    style={{ accentColor: '#10b981', width: '16px', height: '16px', cursor: 'pointer' }}
-                                  />
-                                  <span>{t.feePaidLabel} ({st.feePaid ? 'Подтверждено ✓' : 'Ожидается'})</span>
-                                </label>
-                              </div>
-                            </div>
-
-                            {/* Attached Files List */}
-                            {st.documents && st.documents.length > 0 && (
-                              <div>
-                                <div style={{ fontSize: '12px', fontWeight: 800, color: isLight ? '#2563eb' : '#60a5fa', marginBottom: '6px' }}>
-                                  📁 {t.docsUploadedCount} {st.documents.length}
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                  {st.documents.map((doc) => (
-                                    <div key={doc.id} style={{
-                                      background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.02)',
-                                      border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)',
-                                      borderRadius: '10px',
-                                      padding: '8px 12px',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'space-between',
-                                      flexWrap: 'wrap',
-                                      gap: '6px'
-                                    }}>
-                                      <div style={{ fontSize: '12px', color: isLight ? '#0f172a' : '#fff', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <FileText size={14} color="#3b82f6" />
-                                        <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.name}</span>
-                                      </div>
-
-                                      <div style={{ display: 'flex', gap: '4px' }}>
-                                        <a
-                                          href={doc.dataUrl}
-                                          download={doc.name}
-                                          style={{
-                                            background: 'rgba(37, 99, 235, 0.15)',
-                                            color: isLight ? '#2563eb' : '#60a5fa',
-                                            padding: '3px 8px',
-                                            borderRadius: '6px',
-                                            fontSize: '10px',
-                                            fontWeight: 700,
-                                            textDecoration: 'none'
-                                          }}
-                                        >
-                                          Скачать
-                                        </a>
-
-                                        <button
-                                          onClick={() => promptDeleteDocument(st.id, doc.id, doc.name)}
-                                          style={{
-                                            background: 'rgba(244, 63, 94, 0.12)',
-                                            color: '#e11d48',
-                                            border: 'none',
-                                            padding: '3px 8px',
-                                            borderRadius: '6px',
-                                            fontSize: '10px',
-                                            fontWeight: 700,
-                                            cursor: 'pointer'
-                                          }}
-                                        >
-                                          Удалить
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </motion.div>
-                        );
-                      })
-                    )}
-                  </AnimatePresence>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '4px', color: isLight ? '#64748b' : '#9ca3af' }}>{t.attachDocLabel}</label>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 14px', background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(37, 99, 235, 0.3)', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: 700, color: '#2563eb' }}>
+                            <Upload size={14} />
+                            <span>Загрузить PDF документ</span>
+                            <input type="file" accept="application/pdf" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, student.id)} />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
-            {/* Admin or Staff: Create Student/Staff Account & Manage ALL System Accounts */}
+            {/* Create Account & Manage All Users (Admin/Staff) */}
             {isSuperUser && activeTab === 'create_account' && (
               <div>
                 <h3 style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '16px' }}>
                   {t.createTitle}
                 </h3>
-                <form onSubmit={handleCreateUserSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '540px', marginBottom: '32px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{tAuth.usernameLabel} *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="student1"
-                        value={newAcc.username}
-                        onChange={(e) => setNewAcc({ ...newAcc, username: e.target.value })}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px',
-                          borderRadius: '10px',
-                          fontSize: '13px',
-                          background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
-                          border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                          color: isLight ? '#0f172a' : '#fff'
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{tAuth.passwordLabel} *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="pass123"
-                        value={newAcc.password}
-                        onChange={(e) => setNewAcc({ ...newAcc, password: e.target.value })}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px',
-                          borderRadius: '10px',
-                          fontSize: '13px',
-                          background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
-                          border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                          color: isLight ? '#0f172a' : '#fff'
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.accountType}</label>
-                      <CustomSelect
-                        options={roleOptions}
-                        value={newAcc.role}
-                        onChange={(val) => setNewAcc({ ...newAcc, role: val })}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.passportLabel}</label>
-                      <input
-                        type="text"
-                        placeholder="AA12345678"
-                        value={newAcc.passport}
-                        onChange={(e) => setNewAcc({ ...newAcc, passport: e.target.value })}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px',
-                          borderRadius: '10px',
-                          fontSize: '13px',
-                          background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
-                          border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                          color: isLight ? '#0f172a' : '#fff'
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.nameLabel}</label>
-                      <input
-                        type="text"
-                        placeholder="Азиз Рахимов"
-                        value={newAcc.name}
-                        onChange={(e) => setNewAcc({ ...newAcc, name: e.target.value })}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px',
-                          borderRadius: '10px',
-                          fontSize: '13px',
-                          background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
-                          border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                          color: isLight ? '#0f172a' : '#fff'
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.phoneLabel}</label>
-                      <input
-                        type="tel"
-                        placeholder="+998 90 123 45 67"
-                        value={newAcc.phone}
-                        onChange={(e) => setNewAcc({ ...newAcc, phone: e.target.value })}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px',
-                          borderRadius: '10px',
-                          fontSize: '13px',
-                          background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
-                          border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                          color: isLight ? '#0f172a' : '#fff'
-                        }}
-                      />
-                    </div>
-                  </div>
-
+                <form onSubmit={handleCreateUserSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px', marginBottom: '36px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: isLight ? '#475569' : '#9ca3af', fontWeight: 600, marginBottom: '4px' }}>{t.targetUni}</label>
-                    <input
-                      type="text"
-                      placeholder="Seoul National University"
-                      value={newAcc.university}
-                      onChange={(e) => setNewAcc({ ...newAcc, university: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        fontSize: '13px',
-                        background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
-                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                        color: isLight ? '#0f172a' : '#fff'
-                      }}
-                    />
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Логин *</label>
+                    <input type="text" required value={newUser.username} onChange={(e) => setNewUser({ ...newUser, username: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px' }} />
                   </div>
-
-                  <button type="submit" style={{
-                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                    color: '#ffffff',
-                    fontWeight: 700,
-                    borderRadius: '12px',
-                    padding: '12px',
-                    fontSize: '14px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}>
-                    <Sparkles size={16} />
-                    <span>{t.btnCreateUser}</span>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Пароль *</label>
+                    <input type="password" required value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>Роль *</label>
+                    <select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: isLight ? '#fff' : '#090d16', color: isLight ? '#0f172a' : '#fff' }}>
+                      <option value="student">{t.studentRoleOpt}</option>
+                      <option value="staff">{t.staffRoleOpt}</option>
+                    </select>
+                  </div>
+                  <button type="submit" style={{ padding: '14px', borderRadius: '12px', background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer' }}>
+                    {t.btnCreateUser}
                   </button>
                 </form>
 
-                {/* ADVANCED ACCOUNTS SEARCH & FILTERING BAR FOR ADMIN AND STAFF */}
-                <div style={{ borderTop: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                    <h4 style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Users size={18} color="#3b82f6" />
-                      <span>{t.allAccountsTitle || 'Все зарегистрированные аккаунты'} ({filteredAccountUsers.length})</span>
-                    </h4>
-                  </div>
-
-                  {/* Filter controls bar: Name/Phone search + Role toggle buttons */}
-                  <div style={{ marginBottom: '16px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px', alignItems: 'center' }}>
-                    {/* Search Input for Name, Username, Passport or 2-4 digit Phone Number */}
-                    <div style={{ position: 'relative' }}>
-                      <Search size={16} color="#3b82f6" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                      <input
-                        type="text"
-                        placeholder={t.searchUserPlaceholder || "Поиск по ФИО, телефону (+998, 77, 555) или логину..."}
-                        value={userAccountSearch}
-                        onChange={(e) => setUserAccountSearch(e.target.value)}
-                        style={{
-                          width: '100%',
-                          borderRadius: '10px',
-                          padding: '10px 14px 10px 38px',
-                          fontSize: '12px',
-                          outline: 'none',
-                          background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.05)',
-                          border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                          color: isLight ? '#0f172a' : '#fff'
-                        }}
-                      />
-                    </div>
-
-                    {/* Role Filter Toggle Buttons with FLUID SLIDING BACKGROUND ANIMATION */}
-                    <div style={{
-                      display: 'flex',
-                      gap: '4px',
-                      background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.04)',
-                      padding: '4px',
-                      borderRadius: '12px',
-                      border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.08)',
-                      position: 'relative',
-                      overflowX: isMobile ? 'auto' : 'visible'
-                    }}>
-                      {[
-                        { id: 'all', label: `${t.tabFilterAll || 'Все'} (${users.length})` },
-                        { id: 'student', label: `${t.tabFilterStudents || 'Студенты'} (${users.filter(u => u.role === 'student').length})` },
-                        { id: 'staff', label: `${t.tabFilterStaff || 'Сотрудники'} (${users.filter(u => u.role === 'staff').length})` }
-                      ].map((tab) => {
-                        const isActive = userAccountRoleFilter === tab.id;
-
-                        return (
-                          <button
-                            key={tab.id}
-                            type="button"
-                            onClick={() => setUserAccountRoleFilter(tab.id)}
-                            style={{
-                              flex: 1,
-                              padding: '8px 10px',
-                              borderRadius: '8px',
-                              border: 'none',
-                              background: 'transparent',
-                              color: isActive ? '#ffffff' : (isLight ? '#64748b' : '#94a3b8'),
-                              fontWeight: 700,
-                              fontSize: isMobile ? '11px' : '12px',
-                              cursor: 'pointer',
-                              position: 'relative',
-                              zIndex: 1,
-                              whiteSpace: 'nowrap',
-                              transition: 'color 0.2s ease'
-                            }}
-                          >
-                            {isActive && (
-                              <motion.div
-                                layoutId="activeRoleTabPill"
-                                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                                style={{
-                                  position: 'absolute',
-                                  inset: 0,
-                                  borderRadius: '8px',
-                                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
-                                  zIndex: -1
-                                }}
-                              />
-                            )}
-                            <span>{tab.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Users List with Clean Non-Overflow Layout Animations */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowX: 'hidden' }}>
-                    <AnimatePresence>
-                      {filteredAccountUsers.length === 0 ? (
-                        <motion.div
-                          key="empty-account-search"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          style={{ padding: '24px 14px', textAlign: 'center', color: isLight ? '#64748b' : '#9ca3af', fontSize: '13px' }}
-                        >
-                          {t.noUsersFound || "Аккаунты по вашему запросу не найдены."}
-                        </motion.div>
-                      ) : (
-                        filteredAccountUsers.map((usr) => {
-                          const isMainAdminAcc = String(usr.username).toLowerCase() === 'darkxan';
-                          const isSelf = currentUser && currentUser.id === usr.id;
-
-                          // Delete permissions: Admin can delete non-main-admin users. Staff can delete STUDENTS only.
-                          const canDeleteUser =
-                            (currentUser.role === 'admin' && !isMainAdminAcc) ||
-                            (currentUser.role === 'staff' && usr.role === 'student');
-
-                          return (
-                            <motion.div
-                              key={usr.id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              transition={{ duration: 0.2 }}
-                              style={{
-                                padding: isMobile ? '12px 14px' : '16px 20px',
-                                borderRadius: '14px',
-                                background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.03)',
-                                border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                flexWrap: 'wrap',
-                                gap: '10px'
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{
-                                  width: isMobile ? '36px' : '42px',
-                                  height: isMobile ? '36px' : '42px',
-                                  borderRadius: '10px',
-                                  background: usr.role === 'admin' ? 'rgba(217, 119, 6, 0.15)' : usr.role === 'staff' ? 'rgba(37, 99, 235, 0.15)' : 'rgba(2, 132, 199, 0.15)',
-                                  color: usr.role === 'admin' ? '#d97706' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontWeight: 800,
-                                  flexShrink: 0
-                                }}>
-                                  {usr.role === 'admin' ? <Shield size={isMobile ? 18 : 20} /> : usr.role === 'staff' ? <User size={isMobile ? 18 : 20} /> : <GraduationCap size={isMobile ? 18 : 20} />}
-                                </div>
-
-                                <div>
-                                  <div style={{ fontSize: isMobile ? '14px' : '15px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                                    <span>{usr.name || usr.username}</span>
-                                    <span style={{
-                                      fontSize: '9px',
-                                      fontWeight: 800,
-                                      textTransform: 'uppercase',
-                                      background: usr.role === 'admin' ? '#d97706' : usr.role === 'staff' ? '#2563eb' : '#0284c7',
-                                      color: '#fff',
-                                      padding: '2px 6px',
-                                      borderRadius: '4px'
-                                    }}>
-                                      {usr.role === 'admin' ? tAuth.adminBadge : usr.role === 'staff' ? tAuth.staffBadge : tAuth.studentBadge}
-                                    </span>
-                                  </div>
-                                  <div style={{ fontSize: '11px', color: isLight ? '#64748b' : '#9ca3af', marginTop: '2px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                                    <span>{tAuth.usernameLabel}: <strong>{usr.username}</strong></span>
-                                    <span>{tAuth.passwordLabel}: <strong>{usr.password}</strong></span>
-                                    {usr.phone && <span>{t.phoneShort || 'Tel'}: <strong>{usr.phone}</strong></span>}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* DELETE USER BUTTON ACCORDING TO ROLE PERMISSIONS */}
-                              <div>
-                                {isMainAdminAcc ? (
-                                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#d97706', background: 'rgba(217, 119, 6, 0.12)', padding: '4px 8px', borderRadius: '6px' }}>
-                                    {t.mainAccountBadge || '🔒 Asosiy hisob'}
-                                  </span>
-                                ) : canDeleteUser ? (
-                                  <button
-                                    onClick={() => promptDeleteUser(usr.id, usr.name || usr.username)}
-                                    style={{
-                                      background: 'rgba(244, 63, 94, 0.1)',
-                                      color: '#f43f5e',
-                                      border: '1px solid rgba(244, 63, 94, 0.25)',
-                                      padding: '6px 12px',
-                                      borderRadius: '8px',
-                                      cursor: 'pointer',
-                                      fontSize: '11px',
-                                      fontWeight: 700,
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '4px'
-                                    }}
-                                  >
-                                    <Trash2 size={13} />
-                                    <span>{t.deleteProfileBtn || 'Profilni o\'chirish'}</span>
-                                  </button>
-                                ) : (
-                                  <span style={{ fontSize: '11px', fontWeight: 600, color: isLight ? '#94a3b8' : '#64748b' }}>
-                                    —
-                                  </span>
-                                )}
-                              </div>
-                            </motion.div>
-                          );
-                        })
+                {/* All Users List */}
+                <h4 style={{ fontSize: '18px', fontWeight: 800, color: isLight ? '#0f172a' : '#fff', marginBottom: '14px' }}>
+                  {t.allAccountsTitle} ({users.length})
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {users.map((u) => (
+                    <div key={u.id} style={{ padding: '14px 18px', background: isLight ? '#fff' : 'rgba(255, 255, 255, 0.03)', border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: '15px' }}>{u.username} <span style={{ fontSize: '11px', color: '#2563eb', padding: '2px 8px', borderRadius: '6px', background: 'rgba(37, 99, 235, 0.1)' }}>{u.role}</span></div>
+                        <div style={{ fontSize: '12px', color: isLight ? '#64748b' : '#9ca3af' }}>{u.name || 'Без имени'} • Pass: {u.passportNumber || 'N/A'}</div>
+                      </div>
+                      {u.username !== 'DarkXAN' && (
+                        <button onClick={() => deleteUser(u.id)} style={{ padding: '6px 12px', background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.3)', color: '#f43f5e', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+                          {t.deleteProfileBtn}
+                        </button>
                       )}
-                    </AnimatePresence>
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
           </div>
         </motion.div>
-
-        {/* REFINED SERIOUS CONFIRMATION MODAL */}
-        <AnimatePresence>
-          {deleteConfirm.isOpen && (
-            <div
-              style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 5000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '16px',
-                background: 'rgba(7, 10, 18, 0.82)',
-                backdropFilter: 'blur(10px)'
-              }}
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                style={{
-                  maxWidth: '440px',
-                  width: '100%',
-                  borderRadius: '20px',
-                  background: isLight ? '#ffffff' : '#0e1424',
-                  border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                  padding: isMobile ? '20px 16px' : '28px',
-                  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
-                  color: isLight ? '#0f172a' : '#fff',
-                  textAlign: 'center'
-                }}
-              >
-                {/* Clean Professional Alert Icon */}
-                <div
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '14px',
-                    background: 'rgba(244, 63, 94, 0.12)',
-                    color: '#f43f5e',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 14px auto'
-                  }}
-                >
-                  <AlertTriangle size={24} />
-                </div>
-
-                <h3 style={{ fontSize: '17px', fontWeight: 800, marginBottom: '6px', color: isLight ? '#0f172a' : '#ffffff' }}>
-                  {deleteConfirm.title}
-                </h3>
-
-                <p style={{ fontSize: '13px', color: isLight ? '#475569' : '#9ca3af', lineHeight: 1.5, marginBottom: '20px', fontWeight: 500 }}>
-                  Вы действительно хотите безвозвратно удалить <strong style={{ color: isLight ? '#2563eb' : '#60a5fa' }}>"{deleteConfirm.itemName}"</strong>?
-                </p>
-
-                {/* Clean Professional Buttons */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  {/* Delete Button */}
-                  <button
-                    onClick={deleteConfirm.onConfirm}
-                    style={{
-                      background: '#e11d48',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '11px 16px',
-                      borderRadius: '10px',
-                      fontSize: '13px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    <span>Удалить</span>
-                  </button>
-
-                  {/* Cancel Button */}
-                  <button
-                    onClick={() => setDeleteConfirm({ isOpen: false, type: 'doc', title: '', itemName: '', onConfirm: null })}
-                    style={{
-                      background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.06)',
-                      color: isLight ? '#334155' : '#cbd5e1',
-                      border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
-                      padding: '11px 16px',
-                      borderRadius: '10px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    <span>Отмена</span>
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
       </div>
     </AnimatePresence>
   );

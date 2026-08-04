@@ -71,25 +71,6 @@ export default function Footer({ currentLang, onOpenConsultation, onOpenLeads })
               <a href="#calculator" style={{ textDecoration: 'none' }} className="card-desc">{tNav.calculator}</a>
               <a href="#roadmap" style={{ textDecoration: 'none' }} className="card-desc">{tNav.roadmap}</a>
               <a href="#faq" style={{ textDecoration: 'none' }} className="card-desc">{tNav.faq}</a>
-              <button
-                onClick={onOpenLeads}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#0284c7',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: 0
-                }}
-              >
-                <Users size={16} />
-                <span>Заявки клиентов (Admin)</span>
-              </button>
             </div>
           </div>
 
