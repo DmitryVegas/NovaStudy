@@ -180,9 +180,20 @@ body.light-theme .card-desc { color: #475569 !important; }
 
 body.light-theme h1,
 body.light-theme h2:not(.modal-banner-title),
-body.light-theme h3,
+body.light-theme h3:not(.uni-banner-title),
 body.light-theme h4 {
   color: #0f172a !important;
+}
+
+.uni-banner-title {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9) !important;
+}
+
+.uni-banner-sub {
+  color: #e0f2fe !important;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9) !important;
 }
 
 body.light-theme p {

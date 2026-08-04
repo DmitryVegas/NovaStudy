@@ -268,12 +268,12 @@ export default function ProgramExplorer({ currentLang, onSelectUniversity, onOpe
 
                   {/* University Name & City Banner Bottom Overlay */}
                   <div style={{ zIndex: 2 }}>
-                    <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#ffffff', textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)', marginBottom: '2px' }}>
+                    <h3 className="uni-banner-title" style={{ fontSize: '20px', fontWeight: 800, color: '#ffffff', textShadow: '0 2px 10px rgba(0, 0, 0, 0.9)', marginBottom: '2px' }}>
                       {uni.name}
                     </h3>
-                    <div style={{ fontSize: '12px', color: '#93c5fd', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <MapPin size={13} color="#60a5fa" />
-                      <span>{currentLang === 'ru' ? uni.cityRu : uni.city} ({uni.nativeName})</span>
+                    <div style={{ fontSize: '12px', color: '#e0f2fe', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin size={13} color="#38bdf8" />
+                      <span className="uni-banner-sub">{currentLang === 'ru' ? uni.cityRu : uni.city} ({uni.nativeName})</span>
                     </div>
                   </div>
                 </div>
@@ -313,16 +313,17 @@ export default function ProgramExplorer({ currentLang, onSelectUniversity, onOpe
                       onClick={() => onSelectUniversity(uni)}
                       style={{
                         width: '100%',
-                        padding: '12px',
-                        fontSize: '13px',
+                        padding: '13px',
+                        fontSize: '14px',
                         fontWeight: 800,
                         borderRadius: '14px',
-                        border: '1px solid rgba(37, 99, 235, 0.4)',
-                        background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(29, 78, 216, 0.25) 100%)',
-                        color: '#60a5fa',
+                        border: 'none',
+                        background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
+                        color: '#ffffff',
                         cursor: 'pointer',
                         textAlign: 'center',
                         transition: 'all 0.2s ease',
+                        boxShadow: '0 6px 18px rgba(29, 78, 216, 0.35)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -330,7 +331,7 @@ export default function ProgramExplorer({ currentLang, onSelectUniversity, onOpe
                       }}
                     >
                       <span>{tCard.btnDetails}</span>
-                      <ChevronRight size={15} />
+                      <ChevronRight size={16} color="#ffffff" />
                     </button>
                   </div>
                 </div>
